@@ -1,0 +1,10 @@
+{
+  "background_color": "#ffffff",
+  "description": "StoreManagementMobile",
+  "display": "standalone",
+  "name": "StoreManagementMobile",
+  "short_name": "StoreManagementMobile",
+  "start_url": "/index.html",
+  "theme_color": "#ffffff",
+  "scope": "/"
+}

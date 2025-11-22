@@ -1,0 +1,22 @@
+﻿<Page
+    x:Class="StoreManagementMobile.Presentation.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="20">
+            <TextBlock Text="{x:Bind ViewModel.WelcomeMessage, Mode=OneWay}" 
+                       FontSize="24" 
+                       HorizontalAlignment="Center"/>
+            
+            <TextBlock Text="Đây là Trang Chủ" 
+                       FontSize="16" 
+                       Foreground="Gray"
+                       HorizontalAlignment="Center"/>
+        </StackPanel>
+    </Grid>
+</Page>
