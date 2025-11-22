@@ -1,56 +1,51 @@
 # StoreManagementMobile
 
-Ứng dụng quản lý cửa hàng đa nền tảng (Mobile, Web, Desktop) được xây dựng bằng **.NET 9** và **Uno Platform**.
+Ứng dụng quản lý cửa hàng được xây dựng trên nền tảng **.NET 9** và **Uno Platform**.
 
 ## 📋 Yêu cầu hệ thống (Prerequisites)
 
-Trước khi bắt đầu, hãy đảm bảo máy tính của bạn đã cài đặt các công cụ sau:
+Để chạy được ứng dụng trên Android, bạn cần cài đặt các công cụ sau:
 
-1.  **Visual Studio 2022** (Phiên bản 17.10 trở lên) hoặc **VS Code**.
-    * Nếu dùng Visual Studio: Cần cài đặt workload **".NET Multi-platform App UI development"** và **"ASP.NET and web development"**.
+1.  **Visual Studio 2022** (v17.10+) hoặc **VS Code**.
 2.  **.NET 9.0 SDK**: [Tải về tại đây](https://dotnet.microsoft.com/en-us/download/dotnet/9.0).
-3.  **Uno Platform Templates**:
-    Mở Terminal và chạy lệnh:
+3.  **Android Studio**:
+    * Bắt buộc phải tải và cài đặt [Android Studio](https://developer.android.com/studio) để có **Android SDK** và **Android Emulator** (Máy ảo).
+    * Mở Android Studio -> **Device Manager** -> Tạo và khởi động một máy ảo (Emulator).
+4.  **Uno Platform Templates**:
     ```bash
     dotnet new install Uno.Templates
     ```
-4.  **Uno Check** (Khuyên dùng để kiểm tra môi trường):
-    Công cụ này giúp cài đặt các phụ thuộc còn thiếu (Android SDK, Emulator, v.v.).
+5.  **Uno Check** (Kiểm tra môi trường):
     ```bash
     dotnet tool install -g Uno.Check
     uno-check
     ```
 
-## 🚀 Cài đặt & Thiết lập (Installation)
+## 🚀 Cài đặt (Installation)
 
-1.  **Clone dự án về máy:**
+1.  **Clone dự án:**
     ```bash
     git clone <đường-dẫn-git-của-bạn>
     cd tiendoha/dotnet-frontend/dotnet-frontend-885ddbe955a9efe2c764b0cb71d6b04403ca9014
     ```
 
-2.  **Khôi phục các thư viện (Restore Nuget Packages):**
-    Dự án sử dụng `Directory.Packages.props` để quản lý version tập trung. Chạy lệnh sau để tải toàn bộ thư viện cần thiết:
+2.  **Cài đặt thư viện:**
     ```bash
     dotnet restore
     ```
 
-## ⚙️ Cấu hình Backend (Lưu ý quan trọng)
+## ⚙️ Cấu hình Backend (Quan trọng)
 
-Ứng dụng này cần kết nối với Backend API để đăng nhập và lấy dữ liệu.
-Theo file `StoreManagementMobile/App.xaml.cs`, cấu hình API mặc định đang là:
+Trước khi chạy App Mobile, hãy đảm bảo **Backend API** đang chạy ở cổng `5000`.
+* Cấu hình mặc định trong code (`App.xaml.cs`) đang trỏ tới: `http://10.0.2.2:5000` (Đây là địa chỉ localhost dành riêng cho Android Emulator).
 
-* **Android Emulator:** `http://10.0.2.2:5000` (IP đặc biệt để Emulator gọi về localhost của máy tính)
-* **Desktop/Web:** `http://localhost:5000`
+## ▶️ Cách chạy dự án trên Android
 
-> **Lưu ý:** Hãy đảm bảo bạn đã chạy Backend API ở cổng `5000` (HTTP) trước khi chạy ứng dụng Mobile.
+Để chạy ứng dụng, hãy làm theo đúng trình tự sau để tránh lỗi SDK:
 
-## ▶️ Cách chạy dự án (Run Project)
+**Bước 1:** Mở **Android Studio** hoặc trình quản lý thiết bị và **khởi động máy ảo Android (Emulator)**. Đợi đến khi máy ảo khởi động xong vào màn hình chính.
 
-Bạn có thể chạy dự án bằng Visual Studio (nhấn F5) hoặc dùng dòng lệnh (CLI) như sau:
+**Bước 2:** Mở Terminal tại thư mục `StoreManagementMobile` và chạy lệnh sau:
 
-### 1. Chạy trên Windows (Desktop)
-Mở terminal tại thư mục chứa file `.sln` hoặc thư mục `StoreManagementMobile`:
 ```bash
-cd StoreManagementMobile
-dotnet run -f net9.0-desktop
+dotnet build -f net9.0-android -t:Run -p:AndroidSdkDirectory="C:\Users\<USER_NAME>\AppData\Local\Android\Sdk"
