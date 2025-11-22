@@ -25,8 +25,8 @@
 
 1.  **Clone dự án:**
     ```bash
-    git clone <đường-dẫn-git-của-bạn>
-    cd tiendoha/dotnet-frontend/dotnet-frontend-885ddbe955a9efe2c764b0cb71d6b04403ca9014
+    git clone https://github.com/tiendoha/dotnet-frontend.git
+    cd vào StoreManagementMobile
     ```
 
 2.  **Cài đặt thư viện:**
