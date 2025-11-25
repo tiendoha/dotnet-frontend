@@ -1,0 +1,102 @@
+<Page
+    x:Class="StoreManagementMobile.Presentation.ProductListPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:StoreManagementMobile.Models"
+    mc:Ignorable="d"
+    Background="#F9F9F9">
+    
+    <Page.Resources>
+        <!-- Giữ lại Style cơ bản để kiểm tra TextBlock -->
+        <Style TargetType="TextBlock" x:Key="PriceTextStyle">
+            <Setter Property="Foreground" Value="#0078D7"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="16"/>
+        </Style>
+        <Style TargetType="TextBlock" x:Key="ProductNameTextStyle">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="MaxLines" Value="2"/>
+        </Style>
+    </Page.Resources>
+
+    <Grid Padding="16, 16, 16, 0">
+        <Grid.RowDefinitions>
+            <!-- Header cố định -->
+            <RowDefinition Height="Auto"/> 
+            <!-- Phần còn lại cho danh sách -->
+            <RowDefinition Height="*"/> 
+        </Grid.RowDefinitions>
+
+        <!-- HEADER: Thanh Tìm kiếm và Nút Lọc (Giữ nguyên) -->
+        <StackPanel Grid.Row="0" Spacing="16" Margin="0,0,0,16">
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBox x:Name="SearchBox"
+                         Grid.Column="0"
+                         Text="{Binding SearchQuery, Mode=TwoWay}"
+                         PlaceholderText="Tìm kiếm .. ."
+                         CornerRadius="8"
+                         Height="48"
+                         VerticalAlignment="Center"/>
+                
+                <Button x:Name="FilterButton"
+                        Grid.Column="1"
+                        Width="48"
+                        Height="48"
+                        CornerRadius="8"
+                        Background="#0078D7"
+                        VerticalAlignment="Center">
+                    <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE71C;" Foreground="White"/> 
+                </Button>
+            </Grid>
+        </StackPanel>
+        
+        <!-- CONTENT: ItemsRepeater Đơn giản thay cho GridView -->
+        <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto"
+                      VerticalAlignment="Stretch"
+                      HorizontalAlignment="Stretch"
+                      Padding="0, 8, 0, 16">
+            
+            <ItemsRepeater x:Name="ProductsRepeater"
+                           ItemsSource="{Binding Items}"
+                           HorizontalAlignment="Stretch">
+                
+                <!-- ItemsRepeater cần một Layout. StackLayout là đơn giản nhất -->
+                <ItemsRepeater.Layout>
+                    <StackLayout Orientation="Vertical" Spacing="12"/> 
+                </ItemsRepeater.Layout>
+
+                <ItemsRepeater.ItemTemplate>
+                    <DataTemplate x:DataType="models:ProductResponse">
+                     >
+                        <Border Background="White"
+                                CornerRadius="8"
+                                Padding="12"
+                                Margin="0, 4">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <!-- Chữ mẫu CỨNG để kiểm tra hiển thị -->
+                                <TextBlock Text="[ID: " Foreground="Gray" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding ProductId}" Foreground="Red" FontWeight="SemiBold"/>
+                                <TextBlock Text="] - " Foreground="Gray"/>
+                                <TextBlock Text="Tên Sản Phẩm Mẫu:"
+                                           Style="{StaticResource ProductNameTextStyle}"
+                                           TextDecorations="Underline"/>
+                                <TextBlock Text="{Binding ProductName}"
+                                           Style="{StaticResource ProductNameTextStyle}"/>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsRepeater.ItemTemplate>
+            </ItemsRepeater>
+        </ScrollViewer>
+    </Grid>
+</Page>
