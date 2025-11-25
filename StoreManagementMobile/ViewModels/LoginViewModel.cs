@@ -47,6 +47,7 @@ public partial class LoginViewModel : ObservableObject
             if (response.Success && response.Data != null)
             {
                 App.UserToken = response.Data.Token;
+                App.UserId = response.Data.User.UserId;
                 NavigateToMain?.Invoke();
             }
             else
