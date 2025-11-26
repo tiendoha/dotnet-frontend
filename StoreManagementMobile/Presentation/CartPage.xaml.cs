@@ -1,28 +1,35 @@
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml;
-using Microsoft.Extensions.DependencyInjection;
 using StoreManagementMobile.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace StoreManagementMobile.Presentation;
 
 public sealed partial class CartPage : Page
 {
-    public CartListViewModel ViewModel { get; }
+    public CartListViewModel ViewModel => (CartListViewModel)this.DataContext;
 
     public CartPage()
     {
         this.InitializeComponent();
 
-        // 🔥 Lấy App để truy cập Host
+        // 👇 GIẢI QUYẾT LỖI COMMAND KHÔNG CHẠY
         var app = (App)Application.Current;
+        var vm = app.Host.Services.GetRequiredService<CartListViewModel>();
 
-        // 🔥 Resolve ViewModel từ DI container
-        ViewModel = app.Host.Services.GetRequiredService<CartListViewModel>();
+        this.DataContext = vm;
 
-        // 🔥 Gán DataContext cho XAML
-        this.DataContext = ViewModel;
-
-        // 🔥 Load giỏ hàng khi vào page
-        _ = ViewModel.LoadItems();
+        _ = vm.LoadItems();
+        _ = vm.LoadPromotions();
     }
+    
+    private void QuantityTextBox_LostFocus(object sender, RoutedEventArgs e)
+    {
+        if (sender is TextBox tb && tb.DataContext is CartItem item)
+        {
+            // Gọi command trong ViewModel
+            ViewModel.UpdateQuantityCommand.Execute(item);
+        }
+    }
+
 }

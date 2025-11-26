@@ -45,25 +45,29 @@ public class CartService : ICartService
         await _db.SaveChangesAsync();
     }
 
-    public async Task UpdateQuantityAsync(int cartItemId, int newQuantity)
+    public async Task UpdateQuantityAsync(int productId, int newQuantity)
     {
-        var item = await _db.CartItems.FindAsync(cartItemId);
-
-        if (item == null || item.UserId != App.UserId) return;
-
+        var item = await _db.CartItems
+            .FirstOrDefaultAsync(x => x.ProductId == productId && x.UserId == App.UserId);
+    
+        if (item == null) return;
+    
         item.Quantity = newQuantity;
         await _db.SaveChangesAsync();
     }
 
-    public async Task RemoveItemAsync(int cartItemId)
+
+    public async Task RemoveItemAsync(int productId)
     {
-        var item = await _db.CartItems.FindAsync(cartItemId);
-
-        if (item == null || item.UserId != App.UserId) return;
-
+        var item = await _db.CartItems
+            .FirstOrDefaultAsync(x => x.ProductId == productId && x.UserId == App.UserId);
+    
+        if (item == null) return;
+    
         _db.CartItems.Remove(item);
         await _db.SaveChangesAsync();
     }
+
 
     public async Task ClearAsync()
     {
