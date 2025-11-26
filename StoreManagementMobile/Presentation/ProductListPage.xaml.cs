@@ -35,4 +35,14 @@ public sealed partial class ProductListPage : Page
             _ = ViewModel.LoadMoreProductsAsync();
         }
     }
+    private void ViewDetails_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.DataContext is ProductResponse product)
+            {
+                var frame = this.Frame;
+
+                // Điều hướng sang ProductDetailPage và truyền product
+                 frame?.Navigate(typeof(ProductDetailPage), product);
+            }
+}
 }

@@ -58,14 +58,14 @@
                 <Image Source="ms-appx:///Assets/Icons/filter.png"
                        Width="22" Height="22"/>
                 <Button.Flyout>
-                    <Flyout x:Name="FilterSortFlyout" Placement="Bottom">
-                        <StackPanel Width="250" Padding="16" Spacing="12">
+                    <Flyout x:Name="FilterSortFlyout"  Placement="Bottom">
+                        <StackPanel Width="250" Background="#F0F0F0" CornerRadius="8" Padding="16" Spacing="12">
                             <TextBlock Text="Sắp xếp theo:" FontWeight="Bold"/>
                             <RadioButtons x:Name="SortOptions">
-                                <RadioButton Content="Tên (A → Z)" Tag="name|false"/>
-                                <RadioButton Content="Giá (Thấp → Cao)" Tag="price|false"/>
-                                <RadioButton Content="Giá (Cao → Thấp)" Tag="price|true"/>
-                                <RadioButton Content="Ngày tạo (Mới → Cũ)" Tag="createdat|true"/>
+                                <RadioButton Content="Tên (A -> Z)" Tag="name|false"/>
+                                <RadioButton Content="Giá (Thấp -> Cao)" Tag="price|false"/>
+                                <RadioButton Content="Giá (Cao -> Thấp)" Tag="price|true"/>
+                                <RadioButton Content="Ngày tạo (Mới -> Cũ)" Tag="createdat|true"/>
                             </RadioButtons>
                             <Button Content="Áp dụng"
                                     Click="ApplySort_Click"
@@ -148,13 +148,15 @@
                                                 FontSize="12"
                                                 Padding="6,4"/>
 
-                                        <Button Grid.Column="1"
-                                                Content="Xem chi tiết"
-                                                Background="#8BC34A"
-                                                Foreground="White"
-                                                CornerRadius="4"
-                                                FontSize="12"
-                                                Padding="6,4"/>
+                                    <Button Grid.Column="1"
+                                        Content="Xem chi tiết"
+                                        Background="#8BC34A"
+                                        Foreground="White"
+                                        CornerRadius="4"
+                                        FontSize="12"
+                                        Padding="6,4"
+                                        Click="ViewDetails_Click"/>
+
                                     </Grid>
                                 </StackPanel>
                             </Border>
