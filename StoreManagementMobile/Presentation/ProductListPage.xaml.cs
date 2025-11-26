@@ -1,24 +1,38 @@
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using System.Collections.Generic;
-using StoreManagementMobile.Models;
 
-namespace StoreManagementMobile.Presentation
+namespace StoreManagementMobile.Presentation;
+
+public sealed partial class ProductListPage : Page
 {
-    public sealed partial class ProductListPage : Page
-    {
-        // Giữ nguyên ViewModel khởi tạo thủ công để test dữ liệu mẫu
-        public ProductListViewModel ViewModel { get; } = new ProductListViewModel(); 
+    public ProductListViewModel ViewModel { get; } = new ProductListViewModel();
 
-        public ProductListPage()
+    public ProductListPage()
+    {
+        this.InitializeComponent();
+        DataContext = ViewModel;
+        _ = ViewModel.LoadProductsAsync(); // async void → dùng _ = ...
+    }
+
+    private void ApplySort_Click(object sender, RoutedEventArgs e)
+    {
+        if (SortOptions.SelectedItem is RadioButton item && item.Tag is string tag)
         {
-            this.InitializeComponent();
-            DataContext = ViewModel; // Gán DataContext
+            var parts = tag.Split('|');
+            string sortField = parts[0];
+            bool desc = bool.Parse(parts[1]);
+            ViewModel.ApplySorting(sortField, desc);
         }
-        
-        private void ProductsGrid_ItemClick(object sender, ItemClickEventArgs e)
+
+        FilterSortFlyout.Hide();
+    }
+
+    private void ScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
+    {
+        var sv = sender as ScrollViewer;
+        if (!e.IsIntermediate && sv.VerticalOffset >= sv.ScrollableHeight - 100)
         {
-             if (e.ClickedItem is not ProductResponse prod) return;
-             Frame.Navigate(typeof(ProductDetailPage), prod.ProductId);
+            _ = ViewModel.LoadMoreProductsAsync();
         }
     }
 }

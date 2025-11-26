@@ -5,98 +5,172 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:StoreManagementMobile.Models"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     Background="#F9F9F9">
-    
+
     <Page.Resources>
-        <!-- Giữ lại Style cơ bản để kiểm tra TextBlock -->
-        <Style TargetType="TextBlock" x:Key="PriceTextStyle">
-            <Setter Property="Foreground" Value="#0078D7"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="FontSize" Value="16"/>
-        </Style>
         <Style TargetType="TextBlock" x:Key="ProductNameTextStyle">
             <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
             <Setter Property="MaxLines" Value="2"/>
+            <Setter Property="Margin" Value="0,8,0,4"/>
+        </Style>
+
+        <Style TargetType="TextBlock" x:Key="PriceTextStyle">
+            <Setter Property="Foreground" Value="#F22613"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
         </Style>
     </Page.Resources>
 
-    <Grid Padding="16, 16, 16, 0">
+    <Grid Padding="16,16,16,0">
         <Grid.RowDefinitions>
-            <!-- Header cố định -->
-            <RowDefinition Height="Auto"/> 
-            <!-- Phần còn lại cho danh sách -->
-            <RowDefinition Height="*"/> 
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- HEADER: Thanh Tìm kiếm và Nút Lọc (Giữ nguyên) -->
-        <StackPanel Grid.Row="0" Spacing="16" Margin="0,0,0,16">
-            <Grid ColumnSpacing="12">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+        <!-- SEARCH + FILTER -->
+        <Grid Grid.Row="0" ColumnSpacing="12" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
 
-                <TextBox x:Name="SearchBox"
-                         Grid.Column="0"
-                         Text="{Binding SearchQuery, Mode=TwoWay}"
-                         PlaceholderText="Tìm kiếm .. ."
-                         CornerRadius="8"
-                         Height="48"
-                         VerticalAlignment="Center"/>
-                
-                <Button x:Name="FilterButton"
-                        Grid.Column="1"
-                        Width="48"
-                        Height="48"
-                        CornerRadius="8"
-                        Background="#0078D7"
-                        VerticalAlignment="Center">
-                    <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE71C;" Foreground="White"/> 
-                </Button>
-            </Grid>
-        </StackPanel>
-        
-        <!-- CONTENT: ItemsRepeater Đơn giản thay cho GridView -->
+            <TextBox x:Name="SearchBox"
+                     Grid.Column="0"
+                     PlaceholderText="Tìm kiếm ..."
+                     CornerRadius="8"
+                     Height="40"
+                     VerticalAlignment="Center"
+                     Text="{x:Bind ViewModel.SearchQuery, Mode=TwoWay}"
+                     Background="#FFFFFF"/>
+
+            <Button x:Name="btnFilter"
+                    Grid.Column="1"
+                    Height="40"
+                    Width="40"
+                    CornerRadius="8"
+                    Padding="0"
+                    Background="#8BC34A">
+                <Image Source="ms-appx:///Assets/Icons/filter.png"
+                       Width="22" Height="22"/>
+                <Button.Flyout>
+                    <Flyout x:Name="FilterSortFlyout" Placement="Bottom">
+                        <StackPanel Width="250" Padding="16" Spacing="12">
+                            <TextBlock Text="Sắp xếp theo:" FontWeight="Bold"/>
+                            <RadioButtons x:Name="SortOptions">
+                                <RadioButton Content="Tên (A → Z)" Tag="name|false"/>
+                                <RadioButton Content="Giá (Thấp → Cao)" Tag="price|false"/>
+                                <RadioButton Content="Giá (Cao → Thấp)" Tag="price|true"/>
+                                <RadioButton Content="Ngày tạo (Mới → Cũ)" Tag="createdat|true"/>
+                            </RadioButtons>
+                            <Button Content="Áp dụng"
+                                    Click="ApplySort_Click"
+                                    Background="#8BC34A"
+                                    Foreground="White"
+                                    CornerRadius="6"/>
+                        </StackPanel>
+                    </Flyout>
+                </Button.Flyout>
+            </Button>
+        </Grid>
+
+        <!-- SCROLL CONTENT -->
         <ScrollViewer Grid.Row="1"
                       VerticalScrollBarVisibility="Auto"
-                      VerticalAlignment="Stretch"
-                      HorizontalAlignment="Stretch"
-                      Padding="0, 8, 0, 16">
-            
-            <ItemsRepeater x:Name="ProductsRepeater"
-                           ItemsSource="{Binding Items}"
-                           HorizontalAlignment="Stretch">
-                
-                <!-- ItemsRepeater cần một Layout. StackLayout là đơn giản nhất -->
-                <ItemsRepeater.Layout>
-                    <StackLayout Orientation="Vertical" Spacing="12"/> 
-                </ItemsRepeater.Layout>
+                      Padding="0,8,0,16"
+                      ViewChanged="ScrollViewer_ViewChanged">
 
-                <ItemsRepeater.ItemTemplate>
-                    <DataTemplate x:DataType="models:ProductResponse">
-                     >
-                        <Border Background="White"
-                                CornerRadius="8"
-                                Padding="12"
-                                Margin="0, 4">
-                            <StackPanel Orientation="Horizontal" Spacing="10">
-                                <!-- Chữ mẫu CỨNG để kiểm tra hiển thị -->
-                                <TextBlock Text="[ID: " Foreground="Gray" FontWeight="SemiBold"/>
-                                <TextBlock Text="{Binding ProductId}" Foreground="Red" FontWeight="SemiBold"/>
-                                <TextBlock Text="] - " Foreground="Gray"/>
-                                <TextBlock Text="Tên Sản Phẩm Mẫu:"
-                                           Style="{StaticResource ProductNameTextStyle}"
-                                           TextDecorations="Underline"/>
-                                <TextBlock Text="{Binding ProductName}"
-                                           Style="{StaticResource ProductNameTextStyle}"/>
-                            </StackPanel>
-                        </Border>
-                    </DataTemplate>
-                </ItemsRepeater.ItemTemplate>
-            </ItemsRepeater>
+            <StackPanel Spacing="16">
+
+                <muxc:ItemsRepeater x:Name="ProductsRepeater"
+                                    ItemsSource="{x:Bind ViewModel.Items}"
+                                    HorizontalAlignment="Stretch">
+                    <muxc:ItemsRepeater.Layout>
+                        <muxc:UniformGridLayout
+                            Orientation="Horizontal"
+                            MaximumRowsOrColumns="2"
+                            MinItemWidth="160"
+                            MinColumnSpacing="10"
+                            MinRowSpacing="10"
+                            ItemsJustification="Center"/>
+                    </muxc:ItemsRepeater.Layout>
+
+                    <muxc:ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="models:ProductResponse">
+                            <Border Background="#FEEAE8"
+                                    CornerRadius="8"
+                                    Padding="8"
+                                    HorizontalAlignment="Stretch">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <!-- IMAGE -->
+                                    <Border Width="120" Height="120"
+                                            CornerRadius="4"
+                                            Background="#E9E2E3"
+                                            Margin="0,0,0,8">
+                                        <Image Source="{x:Bind ImageUrl}"
+                                               Stretch="Uniform"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"/>
+                                    </Border>
+
+                                    <!-- NAME -->
+                                    <TextBlock Text="{x:Bind ProductName}"
+                                               Style="{StaticResource ProductNameTextStyle}"
+                                               HorizontalAlignment="Center"/>
+
+                                    <!-- PRICE -->
+                                    <StackPanel Orientation="Horizontal"
+                                                HorizontalAlignment="Center">
+                                        <TextBlock Text="Giá: "
+                                                   FontSize="16"
+                                                   FontWeight="SemiBold"
+                                                   Margin="0,0,4,8"/>
+                                        <TextBlock Text="{x:Bind Price}"
+                                                   Style="{StaticResource PriceTextStyle}"/>
+                                    </StackPanel>
+
+                                    <!-- BUTTONS -->
+                                    <Grid ColumnSpacing="8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <Button Grid.Column="0"
+                                                Content="Thêm vào giỏ hàng"
+                                                Background="#F4A79F"
+                                                Foreground="White"
+                                                CornerRadius="4"
+                                                FontSize="12"
+                                                Padding="6,4"/>
+
+                                        <Button Grid.Column="1"
+                                                Content="Xem chi tiết"
+                                                Background="#8BC34A"
+                                                Foreground="White"
+                                                CornerRadius="4"
+                                                FontSize="12"
+                                                Padding="6,4"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </muxc:ItemsRepeater.ItemTemplate>
+                </muxc:ItemsRepeater>
+
+                <!-- LOADING INDICATOR -->
+              <ProgressRing x:Name="LoadingIndicator"
+              IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}"
+              Width="48" Height="48"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Top"
+              Margin="0,20,0,0"/>
+
+            </StackPanel>
         </ScrollViewer>
     </Grid>
 </Page>
