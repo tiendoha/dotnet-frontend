@@ -50,6 +50,7 @@ public partial class App : Application
                     services.AddTransient<LoginViewModel>();
                     services.AddTransient<HomeViewModel>();
                     services.AddTransient<ProductListViewModel>();
+                     services.AddTransient<ProductDetailViewModel>();
                 })
             );
 

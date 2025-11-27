@@ -74,8 +74,9 @@ namespace StoreManagementMobile.Presentation
 
         private string BuildApiUrl()
         {
+            bool SortDesc = false;
             var baseUrl = "http://localhost:5000/api/Products";
-            var url = $"{baseUrl}?pageNumber={PageNumber}&pageSize={PageSize}&status=Active";
+            var url = $"{baseUrl}?pageNumber={PageNumber}&pageSize={PageSize}&sortDesc={SortDesc}";
 
             if (!string.IsNullOrEmpty(SearchQuery))
                 url += $"&searchTerm={SearchQuery}";
