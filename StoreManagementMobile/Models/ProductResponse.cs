@@ -8,11 +8,11 @@ namespace StoreManagementMobile.Models
         public int ProductId { get; set; }
         public int CategoryId { get; set; }
         public int SupplierId { get; set; }
-        
+        public string CategoryName { get; set; }
         public string? ProductName { get; set; } 
         public string? Barcode { get; set; }
         public decimal Price { get; set; } 
-        public string PriceText => Price.ToString("C0"); 
+        public string PriceText => $"{Price:N0} ₫";
         public string? Unit { get; set; } 
         public string? ImagePath { get; set; } 
             public string? ImageUrl 

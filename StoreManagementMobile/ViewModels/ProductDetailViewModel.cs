@@ -18,7 +18,7 @@ namespace StoreManagementMobile.Presentation
         public string ProductImageUrl => _product.ImageUrl;
         public string ProductBarcode => _product.Barcode;
         public string ProductUnit => _product.Unit;
-        public string ProductCategoryName => "Tên Loại SP"; // Cần map/load từ API
+        public string ProductCategoryName => _product.CategoryName; 
         
         // Định dạng giá tiền
         public string ProductPriceFormatted => 

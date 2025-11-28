@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input; // 🔥 THÊM: Để tạo Command cho ImmediateSearchAsync
 using StoreManagementMobile.Models;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -7,7 +8,8 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Diagnostics;
-using System; // Đã thêm System
+using System;
+using System.Threading;
 
 namespace StoreManagementMobile.Presentation
 {
@@ -15,8 +17,19 @@ namespace StoreManagementMobile.Presentation
     {
         private readonly HttpClient _http = new HttpClient();
         
-        // 🔥 ĐÃ SỬA: Đổi giá trị từ localhost sang 10.0.2.2 để hoạt động trên Emulator
+        // Đã sửa: Đổi giá trị từ localhost sang 10.0.2.2 để hoạt động trên Emulator
         private string API_IMAGE = "http://10.0.2.2:5000"; 
+
+        // Thêm: Để xử lý Debounce cho chức năng tìm kiếm
+        private CancellationTokenSource _searchCts; 
+        // 🔥 ĐÃ SỬA: Debounce tiêu chuẩn là 500ms (0.5 giây)
+        private const int SEARCH_DEBOUNCE_MS = 500; 
+
+        [ObservableProperty]
+        private ObservableCollection<CategoryResponse> _categories = new();
+
+        [ObservableProperty]
+        private int _selectedCategoryId = 0;
 
         public int PageNumber { get; set; } = 1;
         public int PageSize { get; set; } = 20;
@@ -25,9 +38,10 @@ namespace StoreManagementMobile.Presentation
         public string SortBy { get; set; } = string.Empty;
         public bool SortDesc { get; set; } = false;
 
-        public int SelectedCategoryId { get; set; } = 0;
-
-        private readonly List<ProductResponse> _fullProductList;
+        
+        private Dictionary<int, string> _categoryNameMap = new();
+        // Giữ lại mẫu product cho đến khi load API xong
+        private readonly List<ProductResponse> _fullProductList; 
 
         [ObservableProperty]
         private ObservableCollection<ProductResponse> _items = new ObservableCollection<ProductResponse>();
@@ -43,48 +57,43 @@ namespace StoreManagementMobile.Presentation
 
         public ProductListViewModel()
         {
-            _fullProductList = CreateSampleProducts();
+            // Dữ liệu mẫu (chỉ dùng tạm, LoadProductsAsync sẽ ghi đè)
+            _fullProductList = CreateSampleProducts(); 
             Items = new ObservableCollection<ProductResponse>(_fullProductList);
+            Task.Run(async () =>
+            {
+                await LoadCategoriesAsync();
+                await LoadProductsAsync(); 
+            });
         }
 
-        // 🔥 ĐÃ THÊM: Helper để đảm bảo ImageUrl là tuyệt đối bằng cách dùng API_IMAGE
         private void EnsureAbsoluteImageUrl(ProductResponse product)
         {
-            // Nếu ImageUrl tồn tại và là đường dẫn tương đối (bắt đầu bằng '/'),
-            // thì nối với API_IMAGE.
             if (!string.IsNullOrEmpty(product.ImageUrl) && product.ImageUrl.StartsWith("/"))
             {
                 product.ImageUrl = $"{API_IMAGE}{product.ImageUrl}";
             }
         }
 
-        // 🔥 ĐÃ SỬA: Dữ liệu mẫu dùng API_IMAGE
         private List<ProductResponse> CreateSampleProducts()
         {
             return new List<ProductResponse>
             {
-                new ProductResponse { ProductId = 1, ProductName = "Coca Cola lon 330ml", Price = 31483.38m, Unit = "Thùng", ImageUrl = $"{API_IMAGE}/images/products/product_1.jpg" },
-                new ProductResponse { ProductId = 10, ProductName = "Socola KitKat Gói Lớn", Price = 139959.00m, Unit = "Gói", ImageUrl = $"{API_IMAGE}/images/products/product_10.jpg" },
-                new ProductResponse { ProductId = 11, ProductName = "Nước Mắm Nam Ngư 500ml", Price = 51792.00m, Unit = "Chai", ImageUrl = $"{API_IMAGE}/images/products/product_11.jpg" },
-                new ProductResponse { ProductId = 10, ProductName = "Socola KitKat Gói Lớn", Price = 139959.00m, Unit = "Gói", ImageUrl = $"{API_IMAGE}/images/products/product_10.jpg" },
-                new ProductResponse { ProductId = 10, ProductName = "Socola KitKat Gói Lớn", Price = 139959.00m, Unit = "Gói", ImageUrl = $"{API_IMAGE}/images/products/product_10.jpg" },
-                new ProductResponse { ProductId = 10, ProductName = "Socola KitKat Gói Lớn", Price = 139959.00m, Unit = "Gói", ImageUrl = $"{API_IMAGE}/images/products/product_10.jpg" },
-                new ProductResponse { ProductId = 10, ProductName = "Socola KitKat Gói Lớn", Price = 139959.00m, Unit = "Gói", ImageUrl = $"{API_IMAGE}/images/products/product_10.jpg" },
-                new ProductResponse { ProductId = 10, ProductName = "Socola KitKat Gói Lớn", Price = 139959.00m, Unit = "Gói", ImageUrl = $"{API_IMAGE}/images/products/product_10.jpg" },
-                new ProductResponse { ProductId = 10, ProductName = "Socola KitKat Gói Lớn", Price = 139959.00m, Unit = "Gói", ImageUrl = $"{API_IMAGE}/images/products/product_10.jpg" },
-                new ProductResponse { ProductId = 10, ProductName = "Socola KitKat Gói Lớn", Price = 139959.00m, Unit = "Gói", ImageUrl = $"{API_IMAGE}/images/products/product_10.jpg" },
-                new ProductResponse { ProductId = 10, ProductName = "Socola KitKat Gói Lớn", Price = 139959.00m, Unit = "Gói", ImageUrl = $"{API_IMAGE}/images/products/product_10.jpg" },
-                new ProductResponse { ProductId = 10, ProductName = "Socola KitKat Gói Lớn", Price = 139959.00m, Unit = "Gói", ImageUrl = $"{API_IMAGE}/images/products/product_10.jpg" },
-                new ProductResponse { ProductId = 10, ProductName = "Socola KitKat Gói Lớn", Price = 139959.00m, Unit = "Gói", ImageUrl = $"{API_IMAGE}/images/products/product_10.jpg" },
+                new ProductResponse { ProductId = 1, ProductName = "Coca Cola lon 330ml", Price = 31483.38m, Unit = "Thùng", ImageUrl = $"{API_IMAGE}/images/products/product_1.jpg", CategoryId = 1 },
+                new ProductResponse { ProductId = 10, ProductName = "Socola KitKat Gói Lớn", Price = 139959.00m, Unit = "Gói", ImageUrl = $"{API_IMAGE}/images/products/product_10.jpg", CategoryId = 2 },
+                new ProductResponse { ProductId = 11, ProductName = "Nước Mắm Nam Ngư 500ml", Price = 51792.00m, Unit = "Chai", ImageUrl = $"{API_IMAGE}/images/products/product_11.jpg", CategoryId = 3 },
+                new ProductResponse { ProductId = 12, ProductName = "Bia Heineken lon", Price = 450000m, Unit = "Thùng", ImageUrl = $"{API_IMAGE}/images/products/product_1.jpg", CategoryId = 1 },
+                new ProductResponse { ProductId = 13, ProductName = "Kẹo Alpenliebe", Price = 35000m, Unit = "Gói", ImageUrl = $"{API_IMAGE}/images/products/product_10.jpg", CategoryId = 2 },
+                new ProductResponse { ProductId = 14, ProductName = "Dầu Ăn Tường An", Price = 80000m, Unit = "Chai", ImageUrl = $"{API_IMAGE}/images/products/product_11.jpg", CategoryId = 3 },
             };
         }
 
         // -------------------------------
-        // 🔥 BUILD URL ĐÚNG API (ĐÃ SỬ DỤNG API_IMAGE)
+        // BUILD URL API
         // -------------------------------
         private string BuildApiUrl()
         {
-            var baseUrl = $"{API_IMAGE}/api/Products"; // 🔥 SỬA: Dùng API_IMAGE
+            var baseUrl = $"{API_IMAGE}/api/Products";
             var url = $"{baseUrl}?pageNumber={PageNumber}&pageSize={PageSize}";
 
             // Sort
@@ -96,32 +105,46 @@ namespace StoreManagementMobile.Presentation
             // Category
             if (SelectedCategoryId > 0)
                 url += $"&categoryId={SelectedCategoryId}";
+                
+            // Search
+            if (!string.IsNullOrWhiteSpace(SearchQuery))
+                // SỬA: Đổi từ searchQuery thành searchTerm theo API
+                url += $"&searchTerm={Uri.EscapeDataString(SearchQuery.Trim())}";
+
 
             return url;
         }
 
 
         // -------------------------------
-        // 🔥 LOAD 1 TRANG (ĐÃ ÁP DỤNG FIX IMAGE URL)
+        // LOAD 1 TRANG (ĐÃ ÁP DỤNG CancellationToken)
         // -------------------------------
-        public async Task LoadProductsAsync()
+        public async Task LoadProductsAsync(CancellationToken cancellationToken = default)
         {
-            // Ngăn chặn việc gọi API nếu đang load
+            // Tránh chạy nhiều lần cùng lúc
             if (IsLoading) return;
 
-            // Xóa thông báo lỗi cũ và reset trang về 1
             _errorMessage = string.Empty;
-            PageNumber = 1;
 
             try
             {
                 IsLoading = true;
+                cancellationToken.ThrowIfCancellationRequested();
 
                 // 1. Dựng URL API
                 string url = BuildApiUrl();
+                Debug.WriteLine($"[API_CALL] Loading products from: {url}");
 
-                // 2. Gọi API để lấy dữ liệu JSON
-                var json = await _http.GetStringAsync(url);
+                // 2. Gọi API để lấy dữ liệu JSON (truyền Cancellation Token vào)
+                using var request = new HttpRequestMessage(HttpMethod.Get, url);
+                using var response = await _http.SendAsync(request, cancellationToken);
+                
+                // Nếu bị hủy, nó sẽ chuyển sang catch OperationCanceledException
+                cancellationToken.ThrowIfCancellationRequested(); 
+
+                response.EnsureSuccessStatusCode(); 
+                var json = await response.Content.ReadAsStringAsync(cancellationToken);
+
 
                 // 3. Deserialize dữ liệu JSON
                 var apiResponse = JsonSerializer.Deserialize<ApiResponse<PagedResult<ProductResponse>>>(
@@ -130,69 +153,77 @@ namespace StoreManagementMobile.Presentation
                 );
 
                 // 4. Xóa danh sách cũ và cập nhật danh sách mới
-                Items.Clear();
+                // Chỉ xóa nếu là tải trang 1 (không phải LoadMore)
+                if (PageNumber == 1)
+                {
+                    Items.Clear();
+                }
 
                 if (apiResponse?.Data?.Items != null)
                 {
                     foreach (var p in apiResponse.Data.Items)
                     {
-                        EnsureAbsoluteImageUrl(p); // 🔥 SỬ DỤNG API_IMAGE ĐỂ FIX URL ẢNH
+                        EnsureAbsoluteImageUrl(p); 
+                        MapCategoryName(p); 
                         Items.Add(p);
                     }
 
                     // Cập nhật số trang dựa vào API trả về
                     TotalPages = apiResponse.Data.TotalPages;
 
-                    if (Items.Count == 0)
+                    if (Items.Count == 0 && PageNumber == 1)
                     {
                         _errorMessage = "Không tìm thấy sản phẩm nào phù hợp.";
                     }
                 }
-                else
+                else if (PageNumber == 1)
                 {
                     _errorMessage = "Không tìm thấy dữ liệu sản phẩm.";
                     TotalPages = 1;
                 }
             }
+            catch (OperationCanceledException)
+            {
+                Debug.WriteLine("[INFO] LoadProductsAsync was canceled.");
+            }
             catch (HttpRequestException ex)
             {
-                // Ghi lỗi ra Logcat
                 Debug.WriteLine($"[HTTP_ERROR] LoadProductsAsync failed: {ex.Message} Status: {ex.StatusCode}");
-                // Hiển thị lỗi ra UI
-                _errorMessage = $"Lỗi kết nối máy chủ ({ex.StatusCode}). Vui lòng kiểm tra đường dẫn API.";
+                _errorMessage = $"Lỗi kết nối máy chủ. Vui lòng kiểm tra đường dẫn API.";
             }
             catch (JsonException ex)
             {
-                // Ghi lỗi ra Logcat
                 Debug.WriteLine($"[JSON_ERROR] LoadProductsAsync failed to parse JSON: {ex.Message}");
-                // Hiển thị lỗi ra UI
                 _errorMessage = $"Lỗi định dạng dữ liệu trả về từ máy chủ.";
             }
             catch (Exception ex)
             {
-                // Ghi lỗi ra Logcat
                 Debug.WriteLine($"[GENERAL_ERROR] LoadProductsAsync failed: {ex.Message}");
-                // Hiển thị lỗi ra UI
                 _errorMessage = $"Đã xảy ra lỗi không xác định: {ex.Message}";
             }
             finally
             {
-                // 5. Kết thúc quá trình loading
                 IsLoading = false;
             }
         }
 
 
         // -------------------------------
-        // 🔥 REFRESH = LOAD LẠI
+        // REFRESH = LOAD LẠI TRANG 1
         // -------------------------------
         public async Task RefreshProducts()
         {
+            // Hủy debounce đang chờ nếu có
+            _searchCts?.Cancel();
+            _searchCts?.Dispose();
+            _searchCts = new CancellationTokenSource();
+
+            PageNumber = 1;
             await LoadProductsAsync();
         }
 
         // -------------------------------
-        // 🔥 FILTER CATEGORY
+        // FILTER CATEGORY (TẢI LẠI TRANG 1)
         // -------------------------------
         public async Task ApplyCategoryFilter()
         {
@@ -201,7 +232,7 @@ namespace StoreManagementMobile.Presentation
         }
 
         // -------------------------------
-        // 🔥 SORT (UI gọi)
+        // SORT (UI gọi)
         // -------------------------------
         public async Task ApplySortingAsync(string sortField, bool desc)
         {
@@ -212,89 +243,128 @@ namespace StoreManagementMobile.Presentation
         }
 
         // -------------------------------
-        // 🔥 LOAD THÊM TRANG (ĐÃ ÁP DỤNG FIX IMAGE URL)
+        // LOAD THÊM TRANG (Infinite Scroll)
         // -------------------------------
         public async Task LoadMoreProductsAsync()
         {
+            // Sử dụng LoadProductsAsync để tái sử dụng logic xử lý lỗi và token hủy
             if (IsLoading || PageNumber >= TotalPages) return;
+            
+            // Tăng PageNumber trước khi gọi LoadProductsAsync
+            PageNumber++;
 
-            // 🔥 SỬA: Dùng _errorMessage
-            _errorMessage = string.Empty;
+            // Không cần CancellationToken ở đây vì nó không phải là search debounce
+            await LoadProductsAsync();
+            
+            // Xử lý giảm PageNumber nếu có lỗi (đã làm trong LoadProductsAsync)
+        }
 
+        private void MapCategoryName(ProductResponse product)
+        {
+            if (_categoryNameMap.TryGetValue(product.CategoryId, out string name))
+            {
+                product.CategoryName = name;
+            }
+            else
+            {
+                product.CategoryName = "Không rõ";
+            }
+        }
+
+        public async Task LoadCategoriesAsync()
+        {
             try
             {
-                IsLoading = true;
-                PageNumber++;
-
-                string url = BuildApiUrl();
+                string url = $"{API_IMAGE}/api/Categories?PageNumber=1&PageSize=100&sortDesc=false"; 
                 var json = await _http.GetStringAsync(url);
 
-                var apiResponse = JsonSerializer.Deserialize<ApiResponse<PagedResult<ProductResponse>>>(
+                var apiResponse = JsonSerializer.Deserialize<ApiResponse<PagedResult<CategoryResponse>>>(
                     json,
                     new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
                 );
 
+                Categories.Clear();
+                _categoryNameMap.Clear();
+                
+                Categories.Add(new CategoryResponse { CategoryId = 0, CategoryName = "Tất cả" });
+                _categoryNameMap.Add(0, "Tất cả");
+
                 if (apiResponse?.Data?.Items != null)
                 {
-                    foreach (var p in apiResponse.Data.Items)
+                    foreach (var c in apiResponse.Data.Items)
                     {
-                        EnsureAbsoluteImageUrl(p); // 🔥 SỬ DỤNG API_IMAGE ĐỂ FIX URL ẢNH
-                        Items.Add(p);
+                        Categories.Add(c);
+                        if (c.CategoryId > 0)
+                        {
+                            _categoryNameMap.TryAdd(c.CategoryId, c.CategoryName);
+                        }
                     }
-                }
-            }
-            catch (Exception ex) when (ex is HttpRequestException || ex is JsonException)
-            {
-                PageNumber--; // Quay lại trang cũ
-
-                // 🔥 ĐÃ THÊM: Ghi lỗi ra Logcat
-                Debug.WriteLine($"[LOAD_MORE_ERROR] Failed to load page {PageNumber + 1}: {ex.GetType().Name} - {ex.Message}");
-
-                if (ex is HttpRequestException)
-                {
-                    // 🔥 SỬA: Dùng _errorMessage
-                    _errorMessage = "Lỗi kết nối khi tải thêm. Vui lòng thử lại.";
-                }
-                else if (ex is JsonException)
-                {
-                    // 🔥 SỬA: Dùng _errorMessage
-                    _errorMessage = "Lỗi dữ liệu khi tải thêm trang.";
                 }
             }
             catch (Exception ex)
             {
-                PageNumber--;
-                // 🔥 ĐÃ THÊM: Ghi lỗi ra Logcat
-                Debug.WriteLine($"[LOAD_MORE_GENERAL_ERROR]: {ex.Message}");
+                Debug.WriteLine($"[CATEGORY_ERROR] Failed to load categories: {ex.Message}");
+            }
+        } 
 
-                // 🔥 SỬA: Dùng _errorMessage
-                _errorMessage = $"Lỗi không xác định khi tải thêm: {ex.Message}";
-            }
-            finally
-            {
-                IsLoading = false;
-            }
+        partial void OnSelectedCategoryIdChanged(int value)
+        {
+            // Hủy debounce tìm kiếm cũ (nếu có) khi người dùng đổi Category
+            _searchCts?.Cancel(); 
+            Task.Run(ApplyCategoryFilter);
+        }
+
+        // -------------------------------
+        // 🔥 HÀM TÌM KIẾM NGAY LẬP TỨC (Khi nhấn Enter hoặc nút Search)
+        // -------------------------------
+        [RelayCommand] // Tự động tạo ImmediateSearchCommand
+        public async Task ImmediateSearchAsync()
+        {
+            // 1. Hủy debounce đang chờ nếu có
+            _searchCts?.Cancel();
+            _searchCts?.Dispose();
+            _searchCts = new CancellationTokenSource();
+            
+            // 2. Đặt lại trang và gọi LoadProductsAsync ngay lập tức
+            PageNumber = 1;
+            // Sử dụng token của CancellationTokenSource mới để nếu có thay đổi tiếp theo thì lệnh này sẽ bị hủy
+            await LoadProductsAsync(_searchCts.Token);
         }
 
 
         // -------------------------------
-        // 🔥 SEARCH LOCAL (LIVE)
+        // HÀM TÌM KIẾM (Debounce khi đang gõ)
         // -------------------------------
         partial void OnSearchQueryChanged(string value)
         {
-            var q = value?.Trim();
+            // 1. Hủy tác vụ tìm kiếm trước đó nếu nó vẫn đang chạy
+            _searchCts?.Cancel();
+            _searchCts?.Dispose();
+            _searchCts = new CancellationTokenSource();
 
-            if (string.IsNullOrWhiteSpace(q))
+            var token = _searchCts.Token;
+
+            // 2. Chạy tác vụ tìm kiếm mới với độ trễ (debounce)
+            Task.Run(async () =>
             {
-                Items = new ObservableCollection<ProductResponse>(_fullProductList);
-                return;
-            }
-
-            Items = new ObservableCollection<ProductResponse>(
-                _fullProductList.Where(p =>
-                    (p.ProductName ?? string.Empty).Contains(q, System.StringComparison.OrdinalIgnoreCase) ||
-                    (p.Barcode ?? string.Empty).Contains(q, System.StringComparison.OrdinalIgnoreCase))
-            );
+                try
+                {
+                    // Chờ 500ms
+                    await Task.Delay(SEARCH_DEBOUNCE_MS, token);
+                    
+                    // Nếu không bị hủy, tiến hành tìm kiếm
+                    PageNumber = 1;
+                    await LoadProductsAsync(token); 
+                }
+                catch (OperationCanceledException)
+                {
+                    Debug.WriteLine("[INFO] Search debounce canceled.");
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[SEARCH_DEBOUNCE_ERROR]: {ex.Message}");
+                }
+            });
         }
     }
 }
