@@ -58,7 +58,7 @@
                 <Image Source="ms-appx:///Assets/Icons/filter.png"
                        Width="22" Height="22"/>
                 <Button.Flyout>
-                    <Flyout x:Name="FilterSortFlyout"  Placement="Bottom">
+                    <Flyout x:Name="FilterSortFlyout" Placement="Bottom">
                         <StackPanel Width="250" Background="#F0F0F0" CornerRadius="8" Padding="16" Spacing="12">
                             <TextBlock Text="Sắp xếp theo:" FontWeight="Bold"/>
                             <RadioButtons x:Name="SortOptions">
@@ -79,100 +79,84 @@
         </Grid>
 
         <!-- SCROLL CONTENT -->
-        <ScrollViewer Grid.Row="1"
-                      VerticalScrollBarVisibility="Auto"
-                      Padding="0,8,0,16"
-                      ViewChanged="ScrollViewer_ViewChanged">
+    <ScrollViewer Grid.Row="1"
+              VerticalScrollBarVisibility="Auto"
+              Padding="0,8,0,16"
+             ViewChanged="ScrollViewer_ViewChanged">
+    <StackPanel Spacing="16">
 
-            <StackPanel Spacing="16">
+        <!-- ITEMS -->
+        <ItemsRepeater x:Name="ProductsRepeater"
+                       ItemsSource="{x:Bind ViewModel.Items, Mode=OneWay}">
+            <ItemsRepeater.Layout>
+                <muxc:UniformGridLayout
+                    Orientation="Horizontal"
+                    MaximumRowsOrColumns="2"
+                    MinItemWidth="160"
+                    MinColumnSpacing="10"
+                    MinRowSpacing="10"
+                    ItemsJustification="Center"/>
+            </ItemsRepeater.Layout>
 
-                <muxc:ItemsRepeater x:Name="ProductsRepeater"
-                                    ItemsSource="{x:Bind ViewModel.Items}"
-                                    HorizontalAlignment="Stretch">
-                    <muxc:ItemsRepeater.Layout>
-                        <muxc:UniformGridLayout
-                            Orientation="Horizontal"
-                            MaximumRowsOrColumns="2"
-                            MinItemWidth="160"
-                            MinColumnSpacing="10"
-                            MinRowSpacing="10"
-                            ItemsJustification="Center"/>
-                    </muxc:ItemsRepeater.Layout>
+            <ItemsRepeater.ItemTemplate>
+                <DataTemplate x:DataType="models:ProductResponse">
+                    <Border Background="#FFFFFF"
+                            CornerRadius="10"
+                            Padding="8"
+                            BorderBrush="#EEE"
+                            BorderThickness="1">
+                        <StackPanel HorizontalAlignment="Center">
+                            <!-- IMAGE -->
+                            <Border Width="120" Height="120"
+                                    CornerRadius="6"
+                                    Background="#F5F5F5"
+                                    Margin="0,0,0,8">
+                                <Image Source="{x:Bind ImageUrl}" Stretch="Uniform"/>
+                            </Border>
 
-                    <muxc:ItemsRepeater.ItemTemplate>
-                        <DataTemplate x:DataType="models:ProductResponse">
-                            <Border Background="#FEEAE8"
-                                    CornerRadius="8"
-                                    Padding="8"
-                                    HorizontalAlignment="Stretch">
-                                <StackPanel HorizontalAlignment="Center">
-                                    <!-- IMAGE -->
-                                    <Border Width="120" Height="120"
-                                            CornerRadius="4"
-                                            Background="#E9E2E3"
-                                            Margin="0,0,0,8">
-                                        <Image Source="{x:Bind ImageUrl}"
-                                               Stretch="Uniform"
-                                               HorizontalAlignment="Center"
-                                               VerticalAlignment="Center"/>
-                                    </Border>
+                            <!-- NAME -->
+                            <TextBlock Text="{x:Bind ProductName}"
+                                       Style="{StaticResource ProductNameTextStyle}"
+                                       HorizontalAlignment="Center"/>
 
-                                    <!-- NAME -->
-                                    <TextBlock Text="{x:Bind ProductName}"
-                                               Style="{StaticResource ProductNameTextStyle}"
-                                               HorizontalAlignment="Center"/>
+                            <!-- PRICE -->
+                            <TextBlock Text="{x:Bind PriceText}"
+                                       Style="{StaticResource PriceTextStyle}"
+                                       HorizontalAlignment="Center"/>
 
-                                    <!-- PRICE -->
-                                    <StackPanel Orientation="Horizontal"
-                                                HorizontalAlignment="Center">
-                                        <TextBlock Text="Giá: "
-                                                   FontSize="16"
-                                                   FontWeight="SemiBold"
-                                                   Margin="0,0,4,8"/>
-                                        <TextBlock Text="{x:Bind Price}"
-                                                   Style="{StaticResource PriceTextStyle}"/>
-                                    </StackPanel>
-
-                                    <!-- BUTTONS -->
-                                    <Grid ColumnSpacing="8">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-
-                                        <Button Grid.Column="0"
-                                                Content="Thêm vào giỏ hàng"
-                                                Background="#F4A79F"
-                                                Foreground="White"
-                                                CornerRadius="4"
-                                                FontSize="12"
-                                                Padding="6,4"/>
-
-                                    <Button Grid.Column="1"
-                                        Content="Xem chi tiết"
+                            <!-- BUTTONS -->
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="8"
+                                        HorizontalAlignment="Center">
+                                <Button Content="Thêm vào giỏ"
+                                        Background="#F4A79F"
+                                        Foreground="White"
+                                        CornerRadius="4"
+                                        FontSize="12"
+                                        Padding="6,4"/>
+                                <Button Content="Xem chi tiết"
                                         Background="#8BC34A"
                                         Foreground="White"
                                         CornerRadius="4"
                                         FontSize="12"
                                         Padding="6,4"
                                         Click="ViewDetails_Click"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ItemsRepeater.ItemTemplate>
+        </ItemsRepeater>
 
-                                    </Grid>
-                                </StackPanel>
-                            </Border>
-                        </DataTemplate>
-                    </muxc:ItemsRepeater.ItemTemplate>
-                </muxc:ItemsRepeater>
+        <!-- LOADING INDICATOR -->
+        <ProgressRing x:Name="LoadingIndicator"
+                      IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}"
+                      Width="48" Height="48"
+                      HorizontalAlignment="Center"
+                      Margin="0,20,0,0"/>
+    </StackPanel>
+</ScrollViewer>
 
-                <!-- LOADING INDICATOR -->
-              <ProgressRing x:Name="LoadingIndicator"
-              IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}"
-              Width="48" Height="48"
-              HorizontalAlignment="Center"
-              VerticalAlignment="Top"
-              Margin="0,20,0,0"/>
 
-            </StackPanel>
-        </ScrollViewer>
     </Grid>
 </Page>

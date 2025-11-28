@@ -12,6 +12,7 @@ namespace StoreManagementMobile.Models
         public string? ProductName { get; set; } 
         public string? Barcode { get; set; }
         public decimal Price { get; set; } 
+        public string PriceText => Price.ToString("C0"); 
         public string? Unit { get; set; } 
         public string? ImagePath { get; set; } 
             public string? ImageUrl 

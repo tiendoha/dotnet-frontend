@@ -1,24 +1,31 @@
 using CommunityToolkit.Mvvm.ComponentModel;
-using StoreManagementMobile.Models; 
+using StoreManagementMobile.Models;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Diagnostics;
+using System; // Đã thêm System
 
 namespace StoreManagementMobile.Presentation
 {
     public partial class ProductListViewModel : ObservableObject
     {
         private readonly HttpClient _http = new HttpClient();
+        
+        // 🔥 ĐÃ SỬA: Đổi giá trị từ localhost sang 10.0.2.2 để hoạt động trên Emulator
+        private string API_IMAGE = "http://10.0.2.2:5000"; 
 
         public int PageNumber { get; set; } = 1;
         public int PageSize { get; set; } = 20;
         public int TotalPages { get; set; } = 1;
 
-        public string SortBy { get; set; } = "";
+        public string SortBy { get; set; } = string.Empty;
         public bool SortDesc { get; set; } = false;
+
+        public int SelectedCategoryId { get; set; } = 0;
 
         private readonly List<ProductResponse> _fullProductList;
 
@@ -29,7 +36,10 @@ namespace StoreManagementMobile.Presentation
         private string _searchQuery = string.Empty;
 
         [ObservableProperty]
-        private bool _isLoading = false; // UI bind trực tiếp
+        private bool _isLoading = false;
+
+        [ObservableProperty]
+        private string _errorMessage = string.Empty;
 
         public ProductListViewModel()
         {
@@ -37,103 +47,243 @@ namespace StoreManagementMobile.Presentation
             Items = new ObservableCollection<ProductResponse>(_fullProductList);
         }
 
+        // 🔥 ĐÃ THÊM: Helper để đảm bảo ImageUrl là tuyệt đối bằng cách dùng API_IMAGE
+        private void EnsureAbsoluteImageUrl(ProductResponse product)
+        {
+            // Nếu ImageUrl tồn tại và là đường dẫn tương đối (bắt đầu bằng '/'),
+            // thì nối với API_IMAGE.
+            if (!string.IsNullOrEmpty(product.ImageUrl) && product.ImageUrl.StartsWith("/"))
+            {
+                product.ImageUrl = $"{API_IMAGE}{product.ImageUrl}";
+            }
+        }
+
+        // 🔥 ĐÃ SỬA: Dữ liệu mẫu dùng API_IMAGE
         private List<ProductResponse> CreateSampleProducts()
         {
             return new List<ProductResponse>
             {
-                new ProductResponse { ProductId = 1, ProductName = "Coca Cola lon 330ml", Price = 31483.38m, Unit = "Thùng", ImageUrl = "/images/products/product_1.jpg" },
-                new ProductResponse { ProductId = 10, ProductName = "Socola KitKat Gói Lớn", Price = 139959.00m, Unit = "Gói", ImageUrl = "/images/products/product_10.jpg" },
-                new ProductResponse { ProductId = 11, ProductName = "Nước Mắm Nam Ngư 500ml", Price = 51792.00m, Unit = "Chai", ImageUrl = "/images/products/product_11.jpg" },
-                new ProductResponse { ProductId = 12, ProductName = "Nước Tương Maggi 300ml", Price = 462539.00m, Unit = "Lon", ImageUrl = "/images/products/product_12.jpg" },
-                new ProductResponse { ProductId = 13, ProductName = "Muối I-ốt Bạc Liêu", Price = 173302.00m, Unit = "Cái", ImageUrl = "/images/products/product_13.jpg" },
-                new ProductResponse { ProductId = 14, ProductName = "Bột Ngọt Ajinomoto 450g", Price = 443069.00m, Unit = "Cái", ImageUrl = "/images/products/product_14.jpg" },
-                new ProductResponse { ProductId = 15, ProductName = "Dầu Ăn Tường An 1L", Price = 281354.00m, Unit = "Túyp", ImageUrl = "/images/products/product_15.jpg" },
-                new ProductResponse { ProductId = 16, ProductName = "Nồi Cơm Điện Sharp 1.8L", Price = 405347.00m, Unit = "Hộp", ImageUrl = "/images/products/product_16.jpg" },
-                new ProductResponse { ProductId = 17, ProductName = "Ấm Siêu Tốc Sunhouse", Price = 113087.00m, Unit = "Chai", ImageUrl = "/images/products/product_17.jpg" },
+                new ProductResponse { ProductId = 1, ProductName = "Coca Cola lon 330ml", Price = 31483.38m, Unit = "Thùng", ImageUrl = $"{API_IMAGE}/images/products/product_1.jpg" },
+                new ProductResponse { ProductId = 10, ProductName = "Socola KitKat Gói Lớn", Price = 139959.00m, Unit = "Gói", ImageUrl = $"{API_IMAGE}/images/products/product_10.jpg" },
+                new ProductResponse { ProductId = 11, ProductName = "Nước Mắm Nam Ngư 500ml", Price = 51792.00m, Unit = "Chai", ImageUrl = $"{API_IMAGE}/images/products/product_11.jpg" },
+                new ProductResponse { ProductId = 10, ProductName = "Socola KitKat Gói Lớn", Price = 139959.00m, Unit = "Gói", ImageUrl = $"{API_IMAGE}/images/products/product_10.jpg" },
+                new ProductResponse { ProductId = 10, ProductName = "Socola KitKat Gói Lớn", Price = 139959.00m, Unit = "Gói", ImageUrl = $"{API_IMAGE}/images/products/product_10.jpg" },
+                new ProductResponse { ProductId = 10, ProductName = "Socola KitKat Gói Lớn", Price = 139959.00m, Unit = "Gói", ImageUrl = $"{API_IMAGE}/images/products/product_10.jpg" },
+                new ProductResponse { ProductId = 10, ProductName = "Socola KitKat Gói Lớn", Price = 139959.00m, Unit = "Gói", ImageUrl = $"{API_IMAGE}/images/products/product_10.jpg" },
+                new ProductResponse { ProductId = 10, ProductName = "Socola KitKat Gói Lớn", Price = 139959.00m, Unit = "Gói", ImageUrl = $"{API_IMAGE}/images/products/product_10.jpg" },
+                new ProductResponse { ProductId = 10, ProductName = "Socola KitKat Gói Lớn", Price = 139959.00m, Unit = "Gói", ImageUrl = $"{API_IMAGE}/images/products/product_10.jpg" },
+                new ProductResponse { ProductId = 10, ProductName = "Socola KitKat Gói Lớn", Price = 139959.00m, Unit = "Gói", ImageUrl = $"{API_IMAGE}/images/products/product_10.jpg" },
+                new ProductResponse { ProductId = 10, ProductName = "Socola KitKat Gói Lớn", Price = 139959.00m, Unit = "Gói", ImageUrl = $"{API_IMAGE}/images/products/product_10.jpg" },
+                new ProductResponse { ProductId = 10, ProductName = "Socola KitKat Gói Lớn", Price = 139959.00m, Unit = "Gói", ImageUrl = $"{API_IMAGE}/images/products/product_10.jpg" },
+                new ProductResponse { ProductId = 10, ProductName = "Socola KitKat Gói Lớn", Price = 139959.00m, Unit = "Gói", ImageUrl = $"{API_IMAGE}/images/products/product_10.jpg" },
             };
         }
 
-        public async Task LoadProductsAsync()
-        {
-            if (IsLoading) return;
-
-            IsLoading = true;
-            PageNumber = 1;
-
-            string url = BuildApiUrl();
-            var json = await _http.GetStringAsync(url);
-            var data = JsonSerializer.Deserialize<ProductPageResponse>(json);
-
-            Items.Clear();
-            foreach (var p in data?.Items ?? new List<ProductResponse>())
-                Items.Add(p);
-
-            TotalPages = data?.TotalPages ?? 1;
-            IsLoading = false;
-        }
-
+        // -------------------------------
+        // 🔥 BUILD URL ĐÚNG API (ĐÃ SỬ DỤNG API_IMAGE)
+        // -------------------------------
         private string BuildApiUrl()
         {
-            bool SortDesc = false;
-            var baseUrl = "http://localhost:5000/api/Products";
-            var url = $"{baseUrl}?pageNumber={PageNumber}&pageSize={PageSize}&sortDesc={SortDesc}";
+            var baseUrl = $"{API_IMAGE}/api/Products"; // 🔥 SỬA: Dùng API_IMAGE
+            var url = $"{baseUrl}?pageNumber={PageNumber}&pageSize={PageSize}";
 
-            if (!string.IsNullOrEmpty(SearchQuery))
-                url += $"&searchTerm={SearchQuery}";
-
+            // Sort
             if (!string.IsNullOrEmpty(SortBy))
-                url += $"&sortBy={SortBy}&sortDesc={SortDesc}";
+            {
+                url += $"&sortBy={SortBy}&sortDesc={SortDesc.ToString().ToLower()}";
+            }
+
+            // Category
+            if (SelectedCategoryId > 0)
+                url += $"&categoryId={SelectedCategoryId}";
 
             return url;
         }
 
+
+        // -------------------------------
+        // 🔥 LOAD 1 TRANG (ĐÃ ÁP DỤNG FIX IMAGE URL)
+        // -------------------------------
+        public async Task LoadProductsAsync()
+        {
+            // Ngăn chặn việc gọi API nếu đang load
+            if (IsLoading) return;
+
+            // Xóa thông báo lỗi cũ và reset trang về 1
+            _errorMessage = string.Empty;
+            PageNumber = 1;
+
+            try
+            {
+                IsLoading = true;
+
+                // 1. Dựng URL API
+                string url = BuildApiUrl();
+
+                // 2. Gọi API để lấy dữ liệu JSON
+                var json = await _http.GetStringAsync(url);
+
+                // 3. Deserialize dữ liệu JSON
+                var apiResponse = JsonSerializer.Deserialize<ApiResponse<PagedResult<ProductResponse>>>(
+                    json,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                );
+
+                // 4. Xóa danh sách cũ và cập nhật danh sách mới
+                Items.Clear();
+
+                if (apiResponse?.Data?.Items != null)
+                {
+                    foreach (var p in apiResponse.Data.Items)
+                    {
+                        EnsureAbsoluteImageUrl(p); // 🔥 SỬ DỤNG API_IMAGE ĐỂ FIX URL ẢNH
+                        Items.Add(p);
+                    }
+
+                    // Cập nhật số trang dựa vào API trả về
+                    TotalPages = apiResponse.Data.TotalPages;
+
+                    if (Items.Count == 0)
+                    {
+                        _errorMessage = "Không tìm thấy sản phẩm nào phù hợp.";
+                    }
+                }
+                else
+                {
+                    _errorMessage = "Không tìm thấy dữ liệu sản phẩm.";
+                    TotalPages = 1;
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                // Ghi lỗi ra Logcat
+                Debug.WriteLine($"[HTTP_ERROR] LoadProductsAsync failed: {ex.Message} Status: {ex.StatusCode}");
+                // Hiển thị lỗi ra UI
+                _errorMessage = $"Lỗi kết nối máy chủ ({ex.StatusCode}). Vui lòng kiểm tra đường dẫn API.";
+            }
+            catch (JsonException ex)
+            {
+                // Ghi lỗi ra Logcat
+                Debug.WriteLine($"[JSON_ERROR] LoadProductsAsync failed to parse JSON: {ex.Message}");
+                // Hiển thị lỗi ra UI
+                _errorMessage = $"Lỗi định dạng dữ liệu trả về từ máy chủ.";
+            }
+            catch (Exception ex)
+            {
+                // Ghi lỗi ra Logcat
+                Debug.WriteLine($"[GENERAL_ERROR] LoadProductsAsync failed: {ex.Message}");
+                // Hiển thị lỗi ra UI
+                _errorMessage = $"Đã xảy ra lỗi không xác định: {ex.Message}";
+            }
+            finally
+            {
+                // 5. Kết thúc quá trình loading
+                IsLoading = false;
+            }
+        }
+
+
+        // -------------------------------
+        // 🔥 REFRESH = LOAD LẠI
+        // -------------------------------
         public async Task RefreshProducts()
         {
             await LoadProductsAsync();
         }
 
-        public int SelectedCategoryId { get; set; } = 0;
-
-        public void ApplyCategoryFilter()
+        // -------------------------------
+        // 🔥 FILTER CATEGORY
+        // -------------------------------
+        public async Task ApplyCategoryFilter()
         {
-            Items = SelectedCategoryId == 0
-                ? new ObservableCollection<ProductResponse>(_fullProductList)
-                : new ObservableCollection<ProductResponse>(_fullProductList.Where(p => p.CategoryId == SelectedCategoryId));
+            PageNumber = 1;
+            await LoadProductsAsync();
         }
 
-        public void ApplySorting(string sortField, bool desc)
+        // -------------------------------
+        // 🔥 SORT (UI gọi)
+        // -------------------------------
+        public async Task ApplySortingAsync(string sortField, bool desc)
         {
-            var sorted = sortField.ToLower() switch
-            {
-                "name" => desc ? _fullProductList.OrderByDescending(p => p.ProductName).ToList() : _fullProductList.OrderBy(p => p.ProductName).ToList(),
-                "price" => desc ? _fullProductList.OrderByDescending(p => p.Price).ToList() : _fullProductList.OrderBy(p => p.Price).ToList(),
-                "createdat" => desc ? _fullProductList.OrderByDescending(p => p.CreatedAt).ToList() : _fullProductList.OrderBy(p => p.CreatedAt).ToList(),
-                _ => _fullProductList
-            };
-
-            Items = new ObservableCollection<ProductResponse>(sorted);
+            SortBy = sortField;
+            SortDesc = desc;
+            PageNumber = 1;
+            await LoadProductsAsync();
         }
 
+        // -------------------------------
+        // 🔥 LOAD THÊM TRANG (ĐÃ ÁP DỤNG FIX IMAGE URL)
+        // -------------------------------
         public async Task LoadMoreProductsAsync()
         {
             if (IsLoading || PageNumber >= TotalPages) return;
 
-            PageNumber++;
-            IsLoading = true;
+            // 🔥 SỬA: Dùng _errorMessage
+            _errorMessage = string.Empty;
 
-            string url = BuildApiUrl();
-            var json = await _http.GetStringAsync(url);
-            var data = JsonSerializer.Deserialize<ProductPageResponse>(json);
+            try
+            {
+                IsLoading = true;
+                PageNumber++;
 
-            foreach (var p in data?.Items ?? new List<ProductResponse>())
-                Items.Add(p);
+                string url = BuildApiUrl();
+                var json = await _http.GetStringAsync(url);
 
-            IsLoading = false;
+                var apiResponse = JsonSerializer.Deserialize<ApiResponse<PagedResult<ProductResponse>>>(
+                    json,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                );
+
+                if (apiResponse?.Data?.Items != null)
+                {
+                    foreach (var p in apiResponse.Data.Items)
+                    {
+                        EnsureAbsoluteImageUrl(p); // 🔥 SỬ DỤNG API_IMAGE ĐỂ FIX URL ẢNH
+                        Items.Add(p);
+                    }
+                }
+            }
+            catch (Exception ex) when (ex is HttpRequestException || ex is JsonException)
+            {
+                PageNumber--; // Quay lại trang cũ
+
+                // 🔥 ĐÃ THÊM: Ghi lỗi ra Logcat
+                Debug.WriteLine($"[LOAD_MORE_ERROR] Failed to load page {PageNumber + 1}: {ex.GetType().Name} - {ex.Message}");
+
+                if (ex is HttpRequestException)
+                {
+                    // 🔥 SỬA: Dùng _errorMessage
+                    _errorMessage = "Lỗi kết nối khi tải thêm. Vui lòng thử lại.";
+                }
+                else if (ex is JsonException)
+                {
+                    // 🔥 SỬA: Dùng _errorMessage
+                    _errorMessage = "Lỗi dữ liệu khi tải thêm trang.";
+                }
+            }
+            catch (Exception ex)
+            {
+                PageNumber--;
+                // 🔥 ĐÃ THÊM: Ghi lỗi ra Logcat
+                Debug.WriteLine($"[LOAD_MORE_GENERAL_ERROR]: {ex.Message}");
+
+                // 🔥 SỬA: Dùng _errorMessage
+                _errorMessage = $"Lỗi không xác định khi tải thêm: {ex.Message}";
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
 
+
+        // -------------------------------
+        // 🔥 SEARCH LOCAL (LIVE)
+        // -------------------------------
         partial void OnSearchQueryChanged(string value)
         {
             var q = value?.Trim();
+
             if (string.IsNullOrWhiteSpace(q))
             {
                 Items = new ObservableCollection<ProductResponse>(_fullProductList);
