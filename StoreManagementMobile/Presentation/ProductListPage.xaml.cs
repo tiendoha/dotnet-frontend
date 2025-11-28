@@ -2,6 +2,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using StoreManagementMobile.Presentation;
+using StoreManagementMobile.Models; // 🔥 CẦN ĐẢM BẢO MODEL NÀY ĐƯỢC THÊM
 
 namespace StoreManagementMobile.Presentation
 {
@@ -50,9 +51,21 @@ namespace StoreManagementMobile.Presentation
                 btnFilter.Flyout.Hide();
         }
 
+        // ----------------------------------------------------
+        // 🔥 ĐÃ THÊM LOGIC CHUYỂN HƯỚNG SANG PRODUCT DETAIL PAGE
+        // ----------------------------------------------------
         private void ViewDetails_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: navigate to product detail page
+            // 1. Kiểm tra sender có phải là Button không
+            if (sender is Button button)
+            {
+                // 2. Lấy đối tượng ProductResponse từ DataContext của Button
+                if (button.DataContext is ProductResponse selectedProduct)
+                {
+                    // 3. Điều hướng đến trang chi tiết, truyền đối tượng sản phẩm đi kèm
+                    this.Frame.Navigate(typeof(ProductDetailPage), selectedProduct);
+                }
+            }
         }
     }
 }
