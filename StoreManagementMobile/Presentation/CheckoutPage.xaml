@@ -1,0 +1,100 @@
+﻿<Page
+    x:Class="StoreManagementMobile.Presentation.CheckoutPage"
+    x:Name="RootPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:conv="using:StoreManagementMobile.Converters">
+
+    <Grid Padding="20" RowDefinitions="Auto,*">
+
+        <TextBlock Text="Thanh toán"
+                   FontSize="28"
+                   FontWeight="Bold"
+                   Margin="0,0,0,20"/>
+
+        <ScrollViewer Grid.Row="1">
+            <StackPanel Spacing="20">
+
+                <!-- ================================================== -->
+                <!-- INFO -->
+                <!-- ================================================== -->
+
+                <TextBlock Text="Thông tin khách hàng"
+                           FontSize="20"
+                           FontWeight="SemiBold"/>
+
+                <StackPanel Spacing="10">
+
+                    <StackPanel>
+                        <TextBlock Text="Họ và Tên"/>
+                        <TextBox Text="{Binding CustomerName, Mode=TwoWay}"
+                                 PlaceholderText="Nhập họ tên"/>
+                    </StackPanel>
+
+                    <StackPanel>
+                        <TextBlock Text="Số điện thoại"/>
+                        <TextBox Text="{Binding CustomerPhone, Mode=TwoWay}"
+                                 InputScope="Number"
+                                 PlaceholderText="Nhập số điện thoại"/>
+                    </StackPanel>
+
+                    <StackPanel>
+                        <TextBlock Text="Email"/>
+                        <TextBox Text="{Binding CustomerEmail, Mode=TwoWay}"
+                                 PlaceholderText="Nhập email"/>
+                    </StackPanel>
+
+                    <StackPanel>
+                        <TextBlock Text="Địa chỉ giao hàng"/>
+                        <TextBox Text="{Binding CustomerAddress, Mode=TwoWay}"
+                                 PlaceholderText="Nhập địa chỉ"/>
+                    </StackPanel>
+                </StackPanel>
+
+
+                <!-- ================================================== -->
+                <!-- PAYMENT -->
+                <!-- ================================================== -->
+
+                <TextBlock Text="Phương thức thanh toán"
+                           FontSize="20"
+                           FontWeight="SemiBold"/>
+
+                <StackPanel Spacing="6">
+                    <RadioButton Content="Tiền mặt"    IsChecked="{Binding IsCash, Mode=TwoWay}"/>
+                    <RadioButton Content="Thẻ"          IsChecked="{Binding IsCard, Mode=TwoWay}"/>
+                    <RadioButton Content="Ví điện tử"   IsChecked="{Binding IsEWallet, Mode=TwoWay}"/>
+                </StackPanel>
+
+
+                <!-- ================================================== -->
+                <!-- TOTAL -->
+                <!-- ================================================== -->
+
+                <TextBlock Text="Tổng cộng"
+                           FontSize="20"
+                           FontWeight="SemiBold"/>
+
+                <TextBlock Text="{Binding TotalText}"
+                           FontSize="26"
+                           FontWeight="Bold"
+                           Foreground="#008F5A"/>
+
+
+                <!-- ================================================== -->
+                <!-- PLACE ORDER -->
+                <!-- ================================================== -->
+
+                <Button Content="Đặt hàng"
+                        Background="#008F5A"
+                        Foreground="White"
+                        CornerRadius="6"
+                        FontSize="18"
+                        Padding="10"
+                        Command="{Binding PlaceOrderCommand}"/>
+
+            </StackPanel>
+        </ScrollViewer>
+
+    </Grid>
+</Page>

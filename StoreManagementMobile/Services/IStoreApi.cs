@@ -11,4 +11,12 @@ public interface IStoreApi
     // ⭐ GET promotions
     [Get("/api/Promotion")]
     Task<BackendResponse<PromotionListData>> GetPromotions();
+    
+    // By-Code
+    [Get("/api/Promotion/by-code/{code}")]
+    Task<BackendResponse<Promotion>> GetPromotionByCode(string code);
+    
+    [Post("/api/orders")]
+    Task<BackendResponse<OrderResponse>> CreateOrder([Body] CreateOrderRequest request);
+
 }

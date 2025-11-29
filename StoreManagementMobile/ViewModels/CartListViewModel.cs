@@ -6,7 +6,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Diagnostics;
-using System.Text.Json;
 
 namespace StoreManagementMobile.ViewModels;
 
@@ -18,7 +17,7 @@ public partial class CartListViewModel : ObservableObject
     public ObservableCollection<CartItem> Items { get; set; } = new();
     public ObservableCollection<SelectablePromotion> PromoList { get; set; } = new();
 
-    // =============== MONEY ===============
+    // ================= MONEY =================
     [ObservableProperty]
     private decimal subtotal;
 
@@ -26,7 +25,7 @@ public partial class CartListViewModel : ObservableObject
 
     [ObservableProperty]
     private decimal discount;
-    
+
     partial void OnDiscountChanged(decimal value)
     {
         OnPropertyChanged(nameof(DiscountText));
@@ -34,37 +33,25 @@ public partial class CartListViewModel : ObservableObject
         OnPropertyChanged(nameof(TotalText));
     }
 
-
     public string DiscountText => $"-{Discount:N0} đ";
 
     public decimal Total => Subtotal - Discount;
     public string TotalText => $"{Total:N0} đ";
 
-    // ⭐ Selected promotion must be SelectablePromotion
+    // Selected promotion (KHÔNG tự áp dụng)
     [ObservableProperty]
     private SelectablePromotion? selectedPromo;
 
     partial void OnSelectedPromoChanged(SelectablePromotion value)
     {
-
-        if (value == null)
+        // ❌ Không áp dụng mã ngay
+        // ❌ Không tính giảm giá ở đây
+        // Chỉ cho phép chọn item có IsEnabled = true
+        if (value is not null && !value.IsEnabled)
         {
-            Discount = 0;
-            return;
+            SelectedPromo = PromoList.FirstOrDefault(x => x.IsEnabled);
         }
-    
-        if (!value.IsEnabled)
-        {
-            // Không cho chọn → chuyển sang mã hợp lệ đầu tiên
-            SelectedPromo = PromoList.FirstOrDefault(p => p.IsEnabled);
-            return;
-        }
-    Debug.WriteLine("value OnSelectedPromoChanged: "+value);
-    Debug.WriteLine("discount= " + discount);
-        _ = ApplyPromo();
-        
     }
-
 
     public CartListViewModel(ICartService cartService, IStoreApi api)
     {
@@ -81,7 +68,6 @@ public partial class CartListViewModel : ObservableObject
         foreach (var i in items) Items.Add(i);
 
         Subtotal = items.Sum(x => x.Price * x.Quantity);
-
         OnPropertyChanged(nameof(SubtotalText));
         OnPropertyChanged(nameof(Total));
         OnPropertyChanged(nameof(TotalText));
@@ -94,37 +80,30 @@ public partial class CartListViewModel : ObservableObject
             var response = await _api.GetPromotions();
             PromoList.Clear();
 
-            // ⭐ Không áp dụng mã
+            // Add "Không áp dụng mã"
             PromoList.Add(new SelectablePromotion
             {
-                Promo = new Promotion { PromoCode = "Không áp dụng mã", DiscountValue = 0 },
+                Promo = new Promotion { PromoCode = "Không áp dụng mã" },
                 IsEnabled = true
             });
 
             foreach (var p in response.Data.Items)
             {
-                bool valid = Subtotal >= p.MinOrderAmount;
-
                 PromoList.Add(new SelectablePromotion
                 {
                     Promo = p,
-                    IsEnabled = valid
+                    IsEnabled = Subtotal >= p.MinOrderAmount
                 });
             }
-
-            // Nếu mã hiện tại không hợp lệ → reset
-            if (SelectedPromo != null && !SelectedPromo.IsEnabled)
-            {
-                SelectedPromo = PromoList.FirstOrDefault(x => x.IsEnabled);
-            }
         }
-        catch
+        catch (Exception ex)
         {
+            Debug.WriteLine("💥 LoadPromotions error: " + ex);
             PromoList.Clear();
         }
     }
 
-    // =============== COMMANDS ===============
+    // ================= COMMANDS =================
 
     [RelayCommand]
     public async Task IncreaseQuantity(CartItem item)
@@ -132,7 +111,6 @@ public partial class CartListViewModel : ObservableObject
         await _cartService.UpdateQuantityAsync(item.ProductId, item.Quantity + 1);
         await LoadItems();
         await LoadPromotions();
-        await ApplyPromo();
     }
 
     [RelayCommand]
@@ -145,7 +123,6 @@ public partial class CartListViewModel : ObservableObject
 
         await LoadItems();
         await LoadPromotions();
-        await ApplyPromo();
     }
 
     [RelayCommand]
@@ -154,7 +131,6 @@ public partial class CartListViewModel : ObservableObject
         await _cartService.RemoveItemAsync(item.ProductId);
         await LoadItems();
         await LoadPromotions();
-        await ApplyPromo();
     }
 
     [RelayCommand]
@@ -165,32 +141,94 @@ public partial class CartListViewModel : ObservableObject
         await _cartService.UpdateQuantityAsync(item.ProductId, item.Quantity);
         await LoadItems();
         await LoadPromotions();
-        await ApplyPromo();
     }
 
-    // ⭐ TÍNH GIẢM GIÁ
+    // ================= APPLY PROMO =================
     [RelayCommand]
     public async Task ApplyPromo()
     {
-        Debug.WriteLine("▶ ApplyPromo() chạy… SelectedPromo = " + SelectedPromo?.Promo?.PromoCode);
-    
         if (SelectedPromo == null || SelectedPromo.Promo?.PromoCode == "Không áp dụng mã")
         {
             Discount = 0;
-            return; // Notify sẽ chạy nhờ OnDiscountChanged()
+            return;
         }
-    
-        var promo = SelectedPromo.Promo;
-    
-        if (Subtotal < promo.MinOrderAmount)
+
+        string code = SelectedPromo.Promo.PromoCode;
+
+        try
+        {
+            var response = await _api.GetPromotionByCode(code);
+
+            if (!response.Success || response.Data == null)
+            {
+                Discount = 0;
+                return;
+            }
+
+            var promo = response.Data;
+
+            if (Subtotal < promo.MinOrderAmount)
+            {
+                Discount = 0;
+                return;
+            }
+
+            if (promo.DiscountType.ToLower() == "percent")
+                Discount = (Subtotal * promo.DiscountValue) / 100m;
+            else
+                Discount = promo.DiscountValue;
+
+            Discount = Math.Min(Discount, Subtotal);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine("💥 ApplyPromo error: " + ex);
             Discount = 0;
-        else if (promo.DiscountType.ToLower() == "percent")
-            Discount = (Subtotal * promo.DiscountValue) / 100m;
-        else
-            Discount = promo.DiscountValue;
+        }
+    }
     
-        // Không vượt tổng
-        Discount = Math.Min(Discount, Subtotal);
+    //================= Continue Payment =================
+    
+    [RelayCommand]
+    public async Task ContinuePayment()
+    {
+        try
+        {
+            Debug.WriteLine("➡ ContinuePaymentCommand gọi!");
+    
+            // Lấy NavigationWindow hiện tại
+            var window = Window.Current;
+            if (window == null)
+            {
+                Debug.WriteLine("❌ Window.Current NULL");
+                return;
+            }
+    
+            // Frame hiện tại
+            var frame = window.Content as Frame;
+            if (frame == null)
+            {
+                Debug.WriteLine("❌ Frame NULL trong ContinuePayment");
+                return;
+            }
+    
+            // Chuẩn bị dữ liệu cần truyền sang Checkout
+            var checkoutData = new CheckoutNavigationData
+            {
+                Subtotal = this.Subtotal,
+                Discount = this.Discount,
+                Total = this.Total,
+                AppliedPromoId = SelectedPromo?.Promo?.PromoId
+            };
+    
+            Debug.WriteLine($"➡ Điều hướng CheckoutPage với Total = {checkoutData.Total}");
+    
+            frame.Navigate(typeof(CheckoutPage), checkoutData);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"💥 Lỗi trong ContinuePayment(): {ex}");
+        }
     }
 
 }

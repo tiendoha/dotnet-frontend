@@ -142,6 +142,12 @@
 
                 <TextBlock Text="Tổng cộng:" Margin="0,10,0,0"/>
                 <TextBlock Text="{Binding TotalText}" FontSize="24" FontWeight="Bold"/>
+
+                <Button Content="Tiếp tục thanh toán"
+                        Background="#008F5A"
+                        Foreground="White"
+                        CornerRadius="6"
+                        Command="{Binding ContinuePaymentCommand}" />
             </StackPanel>
 
         </StackPanel>

@@ -69,6 +69,8 @@ public partial class App : Application
                         services.AddTransient<HomeViewModel>();
                         services.AddTransient<CartListViewModel>();
                         services.AddTransient<ProductDetailViewModel>();
+                        services.AddTransient<CheckoutViewModel>();
+
 
                         // Services
                         services.AddSingleton<ICartService, CartService>();
@@ -84,7 +86,7 @@ public partial class App : Application
             // 👉 LƯU Ý:
             // Khi login hoạt động, chỉ cần COMMENT 2 dòng này.
             App.UserId = 1;
-            App.UserToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxIiwidW5pcXVlX25hbWUiOiJhZG1pbiIsInJvbGUiOiJBZG1pbiIsImp0aSI6IjE1OGRlMTNjLTI0ZTktNGQxMS04MmI1LWIyMTBhMDU1ZmQxMyIsImlhdCI6MTc2NDE0NzA2NiwibmJmIjoxNzY0MTQ3MDY2LCJleHAiOjE3NjQxNTA2NjYsImlzcyI6IlN0b3JlTWFuYWdlbWVudEFQSSIsImF1ZCI6IlN0b3JlTWFuYWdlbWVudENsaWVudCJ9.Sfn386SCnhLv0-zXL2sn9QdVs02_YGGXzs3BpSgx0zs";
+            App.UserToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxIiwidW5pcXVlX25hbWUiOiJhZG1pbiIsInJvbGUiOiJBZG1pbiIsImp0aSI6IjdmZGViNWY4LTNjNDQtNDI1Yy1hMmU1LWUzODE4YTU4Zjk3ZiIsImlhdCI6MTc2NDMzNjczNywibmJmIjoxNzY0MzM2NzM3LCJleHAiOjE3NjQzNDAzMzcsImlzcyI6IlN0b3JlTWFuYWdlbWVudEFQSSIsImF1ZCI6IlN0b3JlTWFuYWdlbWVudENsaWVudCJ9.bIwgtjIrVGgSG7L4ZRZ9mU7aVUqHWPxIQBYzDhpHAbs";
             // ======================================================
 
             // ============================
