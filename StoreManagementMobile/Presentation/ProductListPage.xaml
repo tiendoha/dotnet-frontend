@@ -45,8 +45,9 @@
                      CornerRadius="8"
                      Height="40"
                      KeyDown="SearchBox_KeyDown"
+                     KeyUp="SearchBox_KeyUp"
                      VerticalAlignment="Center"
-                     Text="{x:Bind ViewModel.SearchQuery, Mode=TwoWay}"
+                      Text="{x:Bind ViewModel.SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                      Background="#FFFFFF"/>
 
             <Button x:Name="btnFilter"

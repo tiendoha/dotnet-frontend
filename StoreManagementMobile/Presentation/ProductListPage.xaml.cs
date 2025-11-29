@@ -78,7 +78,15 @@ namespace StoreManagementMobile.Presentation
                 Task.Run(async () => await ViewModel.ApplySortingAsync(sortBy, sortDesc));
             }
         }
-        
+        private void SearchBox_KeyUp(object sender, KeyRoutedEventArgs e)
+            {
+                if (e.Key == Windows.System.VirtualKey.Enter)   
+                {
+                    Debug.WriteLine("ENTER pressed → ImmediateSearch");
+                    ViewModel.ImmediateSearchCommand.Execute(null);
+                }
+            }
+
         // -------------------------------
         // 🔥 HÀM XỬ LÝ NHẤN NÚT ÁP DỤNG TRONG FLYOUT (Đã hợp nhất logic)
         // -------------------------------

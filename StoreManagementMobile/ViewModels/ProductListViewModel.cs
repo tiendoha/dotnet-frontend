@@ -24,6 +24,8 @@ namespace StoreManagementMobile.Presentation
         private CancellationTokenSource _searchCts; 
         // 🔥 ĐÃ SỬA: Debounce tiêu chuẩn là 500ms (0.5 giây)
         private const int SEARCH_DEBOUNCE_MS = 500; 
+        private CancellationTokenSource _debounceCts;
+        private CancellationTokenSource _immediateCts;
 
         [ObservableProperty]
         private ObservableCollection<CategoryResponse> _categories = new();
@@ -317,54 +319,70 @@ namespace StoreManagementMobile.Presentation
         // -------------------------------
         // 🔥 HÀM TÌM KIẾM NGAY LẬP TỨC (Khi nhấn Enter hoặc nút Search)
         // -------------------------------
-        [RelayCommand] // Tự động tạo ImmediateSearchCommand
-        public async Task ImmediateSearchAsync()
-        {
-            // 1. Hủy debounce đang chờ nếu có
-            _searchCts?.Cancel();
-            _searchCts?.Dispose();
-            _searchCts = new CancellationTokenSource();
-            
-            // 2. Đặt lại trang và gọi LoadProductsAsync ngay lập tức
-            PageNumber = 1;
-            // Sử dụng token của CancellationTokenSource mới để nếu có thay đổi tiếp theo thì lệnh này sẽ bị hủy
-            await LoadProductsAsync(_searchCts.Token);
-        }
+       // Tự động tạo ImmediateSearchCommand
+     [RelayCommand]
+public async Task ImmediateSearchAsync()
+{
+    // Hủy token tìm kiếm tức thì cũ
+    _immediateCts?.Cancel();
+    _immediateCts?.Dispose();
+
+    _immediateCts = new CancellationTokenSource();
+    var token = _immediateCts.Token;
+
+    PageNumber = 1;
+
+    try
+    {
+        await LoadProductsAsync(token);
+    }
+    catch (OperationCanceledException)
+    {
+        Debug.WriteLine("[ImmediateSearch] Canceled");
+    }
+}
+
 
 
         // -------------------------------
         // HÀM TÌM KIẾM (Debounce khi đang gõ)
         // -------------------------------
-        partial void OnSearchQueryChanged(string value)
+       partial void OnSearchQueryChanged(string value)
+{
+    // Nếu SearchQuery rỗng → refresh nhanh
+    if (string.IsNullOrWhiteSpace(value))
+    {
+        Task.Run(async () =>
         {
-            // 1. Hủy tác vụ tìm kiếm trước đó nếu nó vẫn đang chạy
-            _searchCts?.Cancel();
-            _searchCts?.Dispose();
-            _searchCts = new CancellationTokenSource();
-
-            var token = _searchCts.Token;
-
-            // 2. Chạy tác vụ tìm kiếm mới với độ trễ (debounce)
-            Task.Run(async () =>
-            {
-                try
-                {
-                    // Chờ 500ms
-                    await Task.Delay(SEARCH_DEBOUNCE_MS, token);
-                    
-                    // Nếu không bị hủy, tiến hành tìm kiếm
-                    PageNumber = 1;
-                    await LoadProductsAsync(token); 
-                }
-                catch (OperationCanceledException)
-                {
-                    Debug.WriteLine("[INFO] Search debounce canceled.");
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"[SEARCH_DEBOUNCE_ERROR]: {ex.Message}");
-                }
-            });
-        }
+            PageNumber = 1;
+            await LoadProductsAsync();
+        });
+        return;
     }
+
+    // Hủy debounce cũ
+    _debounceCts?.Cancel();
+    _debounceCts?.Dispose();
+
+    _debounceCts = new CancellationTokenSource();
+    var token = _debounceCts.Token;
+
+    Task.Run(async () =>
+    {
+        try
+        {
+            // Delay 500ms (debounce)
+            await Task.Delay(SEARCH_DEBOUNCE_MS, token);
+
+            PageNumber = 1;
+            await LoadProductsAsync(token);
+        }
+        catch (OperationCanceledException)
+        {
+            Debug.WriteLine("[Debounce] Canceled");
+        }
+    });
+}
+}
+
 }
