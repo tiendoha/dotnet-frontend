@@ -130,30 +130,32 @@ namespace StoreManagementMobile.Presentation
         // ----------------------------------------------------
         // XỬ LÝ LOAD MORE KHI CUỘN ĐẾN CUỐI (Đã hợp nhất và tối ưu)
         // ----------------------------------------------------
-        private void ScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
-        {
-            if (e.IsIntermediate) return; // Chỉ xử lý khi quá trình cuộn kết thúc
+      private DateTime _lastLoadMoreTime = DateTime.MinValue;
 
-            if (sender is ScrollViewer scrollViewer)
-            {
-                double verticalOffset = scrollViewer.VerticalOffset;
-                double extentHeight = scrollViewer.ExtentHeight;
-                double viewportHeight = scrollViewer.ViewportHeight;
+private void ScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
+{
+    if (sender is not ScrollViewer sv) return;
 
-                // Kiểm tra nếu người dùng cuộn đến 50px cuối cùng của ScrollableHeight
-                if (!ViewModel.IsLoading && 
-                    ViewModel.PageNumber < ViewModel.TotalPages &&
-                    scrollViewer.ScrollableHeight > 0 && // Đảm bảo có thể cuộn
-                    verticalOffset >= scrollViewer.ScrollableHeight - 50) 
-                {
-                    Debug.WriteLine("[INFO] Triggering Load More...");
-                    
-                    // Chạy LoadMoreProductsAsync trên background thread
-                    // Quan trọng: ViewModel.LoadMoreProductsAsync phải xử lý cập nhật Products ObservableCollection 
-                    // một cách an toàn (ví dụ: dùng Dispatcher Queue)
-                    Task.Run(async () => await ViewModel.LoadMoreProductsAsync());
-                }
-            }
-        }
+    // Ngưỡng cuối 150px
+    bool nearBottom = sv.VerticalOffset >= sv.ScrollableHeight - 150;
+
+    // Chặn spam scroll
+    if ((DateTime.Now - _lastLoadMoreTime).TotalMilliseconds < 600)
+        return;
+
+    // Điều kiện chuẩn
+    if (nearBottom 
+        && !ViewModel.IsLoading 
+        && ViewModel.PageNumber < ViewModel.TotalPages)
+    {
+        _lastLoadMoreTime = DateTime.Now;
+
+        Debug.WriteLine("⚡ Load More Triggered!");
+
+        // NÃO: KHÔNG dùng Task.Run (ảnh hưởng Dispatcher)
+        _ = ViewModel.LoadMoreProductsAsync();
+    }
+}
+
     }
 }

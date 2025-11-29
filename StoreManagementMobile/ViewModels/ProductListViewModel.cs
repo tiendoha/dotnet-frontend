@@ -117,97 +117,100 @@ namespace StoreManagementMobile.Presentation
             return url;
         }
 
+        // Gán tên Category vào Product (nếu có trong map)
+        private void MapCategoryName(ProductResponse product)
+        {
+            if (product == null) return;
+
+            if (_categoryNameMap.TryGetValue(product.CategoryId, out var categoryName))
+            {
+                product.CategoryName = categoryName;
+            }
+            else
+            {
+                product.CategoryName = "Không rõ";
+            }
+        }
 
         // -------------------------------
         // LOAD 1 TRANG (ĐÃ ÁP DỤNG CancellationToken)
         // -------------------------------
-        public async Task LoadProductsAsync(CancellationToken cancellationToken = default)
+   public async Task LoadProductsAsync(bool append = false, CancellationToken cancellationToken = default)
+{
+    if (IsLoading) return;
+    _errorMessage = string.Empty;
+
+    try
+    {
+        IsLoading = true;
+        cancellationToken.ThrowIfCancellationRequested();
+
+        string url = BuildApiUrl();
+        Debug.WriteLine($"[API_CALL] Loading products from: {url}");
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, url);
+        using var response = await _http.SendAsync(request, cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        response.EnsureSuccessStatusCode();
+        var json = await response.Content.ReadAsStringAsync(cancellationToken);
+
+        var apiResponse = JsonSerializer.Deserialize<ApiResponse<PagedResult<ProductResponse>>>(
+            json,
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+        );
+
+        if (!append)
         {
-            // Tránh chạy nhiều lần cùng lúc
-            if (IsLoading) return;
+            Items.Clear();
+        }
 
-            _errorMessage = string.Empty;
-
-            try
+        if (apiResponse?.Data?.Items != null)
+        {
+            foreach (var p in apiResponse.Data.Items)
             {
-                IsLoading = true;
-                cancellationToken.ThrowIfCancellationRequested();
-
-                // 1. Dựng URL API
-                string url = BuildApiUrl();
-                Debug.WriteLine($"[API_CALL] Loading products from: {url}");
-
-                // 2. Gọi API để lấy dữ liệu JSON (truyền Cancellation Token vào)
-                using var request = new HttpRequestMessage(HttpMethod.Get, url);
-                using var response = await _http.SendAsync(request, cancellationToken);
-                
-                // Nếu bị hủy, nó sẽ chuyển sang catch OperationCanceledException
-                cancellationToken.ThrowIfCancellationRequested(); 
-
-                response.EnsureSuccessStatusCode(); 
-                var json = await response.Content.ReadAsStringAsync(cancellationToken);
-
-
-                // 3. Deserialize dữ liệu JSON
-                var apiResponse = JsonSerializer.Deserialize<ApiResponse<PagedResult<ProductResponse>>>(
-                    json,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
-                );
-
-                // 4. Xóa danh sách cũ và cập nhật danh sách mới
-                // Chỉ xóa nếu là tải trang 1 (không phải LoadMore)
-                if (PageNumber == 1)
-                {
-                    Items.Clear();
-                }
-
-                if (apiResponse?.Data?.Items != null)
-                {
-                    foreach (var p in apiResponse.Data.Items)
-                    {
-                        EnsureAbsoluteImageUrl(p); 
-                        MapCategoryName(p); 
-                        Items.Add(p);
-                    }
-
-                    // Cập nhật số trang dựa vào API trả về
-                    TotalPages = apiResponse.Data.TotalPages;
-
-                    if (Items.Count == 0 && PageNumber == 1)
-                    {
-                        _errorMessage = "Không tìm thấy sản phẩm nào phù hợp.";
-                    }
-                }
-                else if (PageNumber == 1)
-                {
-                    _errorMessage = "Không tìm thấy dữ liệu sản phẩm.";
-                    TotalPages = 1;
-                }
+                EnsureAbsoluteImageUrl(p);
+                MapCategoryName(p);
+                Items.Add(p);
             }
-            catch (OperationCanceledException)
+
+            TotalPages = apiResponse.Data.TotalPages;
+
+            if (Items.Count == 0 && !append)
             {
-                Debug.WriteLine("[INFO] LoadProductsAsync was canceled.");
-            }
-            catch (HttpRequestException ex)
-            {
-                Debug.WriteLine($"[HTTP_ERROR] LoadProductsAsync failed: {ex.Message} Status: {ex.StatusCode}");
-                _errorMessage = $"Lỗi kết nối máy chủ. Vui lòng kiểm tra đường dẫn API.";
-            }
-            catch (JsonException ex)
-            {
-                Debug.WriteLine($"[JSON_ERROR] LoadProductsAsync failed to parse JSON: {ex.Message}");
-                _errorMessage = $"Lỗi định dạng dữ liệu trả về từ máy chủ.";
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"[GENERAL_ERROR] LoadProductsAsync failed: {ex.Message}");
-                _errorMessage = $"Đã xảy ra lỗi không xác định: {ex.Message}";
-            }
-            finally
-            {
-                IsLoading = false;
+                _errorMessage = "Không tìm thấy sản phẩm nào phù hợp.";
             }
         }
+        else if (!append)
+        {
+            _errorMessage = "Không tìm thấy dữ liệu sản phẩm.";
+            TotalPages = 1;
+        }
+    }
+    catch (OperationCanceledException)
+    {
+        Debug.WriteLine("[INFO] LoadProductsAsync was canceled.");
+    }
+    catch (HttpRequestException ex)
+    {
+        Debug.WriteLine($"[HTTP_ERROR] LoadProductsAsync failed: {ex.Message} Status: {ex.StatusCode}");
+        _errorMessage = $"Lỗi kết nối máy chủ. Vui lòng kiểm tra đường dẫn API.";
+    }
+    catch (JsonException ex)
+    {
+        Debug.WriteLine($"[JSON_ERROR] LoadProductsAsync failed to parse JSON: {ex.Message}");
+        _errorMessage = $"Lỗi định dạng dữ liệu trả về từ máy chủ.";
+    }
+    catch (Exception ex)
+    {
+        Debug.WriteLine($"[GENERAL_ERROR] LoadProductsAsync failed: {ex.Message}");
+        _errorMessage = $"Đã xảy ra lỗi không xác định: {ex.Message}";
+    }
+    finally
+    {
+        IsLoading = false;
+    }
+}
 
 
         // -------------------------------
@@ -247,31 +250,15 @@ namespace StoreManagementMobile.Presentation
         // -------------------------------
         // LOAD THÊM TRANG (Infinite Scroll)
         // -------------------------------
-        public async Task LoadMoreProductsAsync()
-        {
-            // Sử dụng LoadProductsAsync để tái sử dụng logic xử lý lỗi và token hủy
-            if (IsLoading || PageNumber >= TotalPages) return;
-            
-            // Tăng PageNumber trước khi gọi LoadProductsAsync
-            PageNumber++;
+public async Task LoadMoreProductsAsync()
+{
+    if (IsLoading) return;
+    if (PageNumber >= TotalPages) return;
 
-            // Không cần CancellationToken ở đây vì nó không phải là search debounce
-            await LoadProductsAsync();
-            
-            // Xử lý giảm PageNumber nếu có lỗi (đã làm trong LoadProductsAsync)
-        }
+    PageNumber++;
+    await LoadProductsAsync(append: true); // append = true → không xóa list
+}
 
-        private void MapCategoryName(ProductResponse product)
-        {
-            if (_categoryNameMap.TryGetValue(product.CategoryId, out string name))
-            {
-                product.CategoryName = name;
-            }
-            else
-            {
-                product.CategoryName = "Không rõ";
-            }
-        }
 
         public async Task LoadCategoriesAsync()
         {
@@ -320,10 +307,10 @@ namespace StoreManagementMobile.Presentation
         // 🔥 HÀM TÌM KIẾM NGAY LẬP TỨC (Khi nhấn Enter hoặc nút Search)
         // -------------------------------
        // Tự động tạo ImmediateSearchCommand
-     [RelayCommand]
+
+[RelayCommand]
 public async Task ImmediateSearchAsync()
 {
-    // Hủy token tìm kiếm tức thì cũ
     _immediateCts?.Cancel();
     _immediateCts?.Dispose();
 
@@ -331,15 +318,7 @@ public async Task ImmediateSearchAsync()
     var token = _immediateCts.Token;
 
     PageNumber = 1;
-
-    try
-    {
-        await LoadProductsAsync(token);
-    }
-    catch (OperationCanceledException)
-    {
-        Debug.WriteLine("[ImmediateSearch] Canceled");
-    }
+    await LoadProductsAsync(append: false, cancellationToken: token); // append = false
 }
 
 
@@ -347,20 +326,18 @@ public async Task ImmediateSearchAsync()
         // -------------------------------
         // HÀM TÌM KIẾM (Debounce khi đang gõ)
         // -------------------------------
-       partial void OnSearchQueryChanged(string value)
+   partial void OnSearchQueryChanged(string value)
 {
-    // Nếu SearchQuery rỗng → refresh nhanh
     if (string.IsNullOrWhiteSpace(value))
     {
         Task.Run(async () =>
         {
             PageNumber = 1;
-            await LoadProductsAsync();
+            await LoadProductsAsync(append: false);
         });
         return;
     }
 
-    // Hủy debounce cũ
     _debounceCts?.Cancel();
     _debounceCts?.Dispose();
 
@@ -371,11 +348,9 @@ public async Task ImmediateSearchAsync()
     {
         try
         {
-            // Delay 500ms (debounce)
             await Task.Delay(SEARCH_DEBOUNCE_MS, token);
-
             PageNumber = 1;
-            await LoadProductsAsync(token);
+            await LoadProductsAsync(append: false, cancellationToken: token);
         }
         catch (OperationCanceledException)
         {
@@ -383,6 +358,7 @@ public async Task ImmediateSearchAsync()
         }
     });
 }
+
 }
 
 }
