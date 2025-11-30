@@ -22,6 +22,10 @@ public sealed partial class CheckoutPage : Page
         if (e.Parameter is CheckoutNavigationData nav)
         {
             ViewModel.Initialize(nav);
+            
+            
+            // ⭐ Tải thông tin khách hàng khi mở trang
+            _ = ViewModel.LoadInfoCustomer();
         }
     }
 }

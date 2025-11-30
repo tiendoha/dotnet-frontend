@@ -86,7 +86,7 @@ public partial class App : Application
             // 👉 LƯU Ý:
             // Khi login hoạt động, chỉ cần COMMENT 2 dòng này.
             App.UserId = 1;
-            App.UserToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxIiwidW5pcXVlX25hbWUiOiJhZG1pbiIsInJvbGUiOiJBZG1pbiIsImp0aSI6IjdmZGViNWY4LTNjNDQtNDI1Yy1hMmU1LWUzODE4YTU4Zjk3ZiIsImlhdCI6MTc2NDMzNjczNywibmJmIjoxNzY0MzM2NzM3LCJleHAiOjE3NjQzNDAzMzcsImlzcyI6IlN0b3JlTWFuYWdlbWVudEFQSSIsImF1ZCI6IlN0b3JlTWFuYWdlbWVudENsaWVudCJ9.bIwgtjIrVGgSG7L4ZRZ9mU7aVUqHWPxIQBYzDhpHAbs";
+            App.UserToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxIiwidW5pcXVlX25hbWUiOiJhZG1pbiIsInJvbGUiOiJBZG1pbiIsImp0aSI6Ijk2ZGEwNTU5LTg0ZDItNDk0ZS04NzZmLTdmZWE3NWU0ODYzZCIsImlhdCI6MTc2NDQ5MTc5MywibmJmIjoxNzY0NDkxNzkzLCJleHAiOjE3NjQ0OTUzOTMsImlzcyI6IlN0b3JlTWFuYWdlbWVudEFQSSIsImF1ZCI6IlN0b3JlTWFuYWdlbWVudENsaWVudCJ9.Vq9tc27Cpo1blykoSASOOzAnMBNJt8wxcRGR7fqtDMY";
             // ======================================================
 
             // ============================
@@ -105,23 +105,12 @@ public partial class App : Application
                     db.CartItems.Add(new CartItem
                     {
                         UserId = App.UserId,
-                        ProductId = 1,
-                        ProductName = "Sản phẩm A",
-                        Price = 12000,
-                        Quantity = 1,
-                        ImagePath = "https://via.placeholder.com/150"
-                    });
-
-                    db.CartItems.Add(new CartItem
-                    {
-                        UserId = App.UserId,
-                        ProductId = 2,
-                        ProductName = "Sản phẩm B",
-                        Price = 54000,
+                        ProductId = 19,
+                        ProductName = "Bếp gas mini",
+                        Price = 416845.00M,
                         Quantity = 2,
-                        ImagePath = "https://via.placeholder.com/150"
+                        ImagePath = "/images/products/product_19.png"
                     });
-
                     db.SaveChanges();
                 }
             }

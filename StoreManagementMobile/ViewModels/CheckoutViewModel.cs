@@ -2,13 +2,13 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using StoreManagementMobile.Models;
 using StoreManagementMobile.Services;
-using System;
-using System.Collections.Generic;
+using StoreManagementMobile.DTOs;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Diagnostics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace StoreManagementMobile.ViewModels;
 
@@ -17,28 +17,37 @@ public partial class CheckoutViewModel : ObservableObject
     private readonly ICartService _cartService;
     private readonly IStoreApi _api;
 
-    // Navigation data passed from Cart page
+    // Navigation data
     public CheckoutNavigationData NavigationData { get; private set; } = new();
 
-    // Form fields
-    [ObservableProperty] private string customerName = string.Empty;
-    [ObservableProperty] private string customerPhone = string.Empty;
-    [ObservableProperty] private string customerEmail = string.Empty;
-    [ObservableProperty] private string customerAddress = string.Empty;
+    // ---------------------- FORM FIELDS ----------------------
+    [ObservableProperty] private string customerName = "";
+    [ObservableProperty] private string customerPhone = "";
+    [ObservableProperty] private string customerEmail = "";
+    [ObservableProperty] private string customerAddress = "";
 
-    // Payment method: "Cash", "Card", "EWallet"
+    // Payment method enum to backend: Cash | Card | EWallet
     [ObservableProperty] private string paymentMethod = "Cash";
 
-    // Order summary (bound to UI)
+    public bool IsCash { get => PaymentMethod == "cash"; set { if (value) PaymentMethod = "cash"; } }
+    public bool IsCard { get => PaymentMethod == "card"; set { if (value) PaymentMethod = "card"; } }
+    public bool IsEWallet { get => PaymentMethod == "ewallet"; set { if (value) PaymentMethod = "ewallet"; } }
+
+    // ---------------------- SUMMARY ----------------------
     [ObservableProperty] private decimal subtotal;
     [ObservableProperty] private decimal discount;
     [ObservableProperty] private decimal total;
 
-    // UI state
-    [ObservableProperty] private bool isBusy;
-    [ObservableProperty] private string statusMessage = string.Empty;
+    public string TotalText => $"{Total:N0} đ";
 
-    public IEnumerable<string> PaymentOptions { get; } = new[] { "Cash", "Card", "EWallet" };
+    partial void OnTotalChanged(decimal value)
+    {
+        OnPropertyChanged(nameof(TotalText));
+    }
+
+    // ---------------------- UI STATE ----------------------
+    [ObservableProperty] private bool isBusy;
+    [ObservableProperty] private string statusMessage = "";
 
     public CheckoutViewModel(ICartService cartService, IStoreApi api)
     {
@@ -46,119 +55,214 @@ public partial class CheckoutViewModel : ObservableObject
         _api = api;
     }
 
-    /// <summary>
-    /// Call this when page is navigated to, pass CheckoutNavigationData from Cart.
-    /// It will populate summary fields and leave form empty for user to fill.
-    /// </summary>
+    // ============================================================
+    // Initialize from navigation
+    // ============================================================
     public void Initialize(CheckoutNavigationData navData)
     {
         NavigationData = navData ?? new CheckoutNavigationData();
-        Subtotal = NavigationData.Subtotal;
-        Discount = NavigationData.Discount;
-        Total = NavigationData.Total;
-        Debug.WriteLine("Subtotal "  +  Subtotal +"+ Discount "+ Discount+ "+ Total : " + Total);
 
-        // Clear any previous messages
-        StatusMessage = string.Empty;
+        Subtotal = navData.Subtotal;
+        Discount = navData.Discount;
+        Total = navData.Total;
+
+        StatusMessage = "";
     }
 
-    // ---- Place order ----
+    // ============================================================
+    // Validation Helpers
+    // ============================================================
+    private bool IsValidPhone(string phone)
+    {
+        return Regex.IsMatch(phone, @"^[0-9]{10}$");
+    }
+
+    private bool IsValidEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email)) return true; // optional
+        return Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+    }
+    
+    // ============================================================
+    // Customer Information
+    // ============================================================  
+    
+    public async Task LoadInfoCustomer()
+    {
+        try
+        {
+            StatusMessage = "Đang tải thông tin khách hàng...";
+    
+            int userId = App.UserId;   // ⭐ Lấy userId từ App (bạn đã set khi login)
+    
+            if (userId <= 0)
+            {
+                StatusMessage = "Không tìm thấy userId.";
+                return;
+            }
+    
+            var response = await _api.GetCustomerById(userId);
+    
+            if (response == null || !response.Success || response.Data == null)
+            {
+                StatusMessage = "Không thể tải thông tin khách hàng.";
+                return;
+            }
+    
+            var customer = response.Data;
+    
+            // ⭐ Đổ dữ liệu vào UI
+            CustomerName = customer.Name;
+            CustomerPhone = customer.Phone;
+            CustomerEmail = customer.Email;
+            CustomerAddress = customer.Address;
+    
+            StatusMessage = "";
+            Debug.WriteLine("✔ LoadInfoCustomer() thành công.");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine("💥 Exception LoadInfoCustomer: " + ex);
+            StatusMessage = "Không thể tải thông tin khách hàng.";
+        }
+    }
+  
+
+    // ============================================================
+    // MAIN: Place Order
+    // ============================================================
     [RelayCommand]
     public async Task PlaceOrder()
     {
         if (IsBusy) return;
 
-        // basic validation
+        // -------------- VALIDATION --------------
         if (string.IsNullOrWhiteSpace(CustomerName))
         {
             StatusMessage = "Vui lòng nhập họ tên.";
             return;
         }
-        if (string.IsNullOrWhiteSpace(CustomerPhone))
+
+        if (!IsValidPhone(CustomerPhone))
         {
-            StatusMessage = "Vui lòng nhập số điện thoại.";
+            StatusMessage = "Số điện thoại phải là 10 chữ số.";
             return;
         }
+
+        if (!IsValidEmail(CustomerEmail))
+        {
+            StatusMessage = "Email không hợp lệ.";
+            return;
+        }
+
         if (string.IsNullOrWhiteSpace(CustomerAddress))
         {
             StatusMessage = "Vui lòng nhập địa chỉ giao hàng.";
             return;
         }
 
+        // UI Loading
         IsBusy = true;
-        StatusMessage = "Đang gửi đơn hàng...";
+        StatusMessage = "Đang tạo đơn hàng...";
 
         try
         {
-            // Lấy cart items từ local sqlite
             var cartItems = await _cartService.GetItemsAsync();
-            if (cartItems == null || !cartItems.Any())
+            if (!cartItems.Any())
             {
                 StatusMessage = "Giỏ hàng trống.";
                 return;
             }
 
-            // Map sang order details
-            var details = cartItems.Select(c => new OrderItemDto
+            var details = cartItems.Select(c => new Models.OrderItemDto
             {
                 ProductId = c.ProductId,
-                Quantity = c.Quantity
+                Quantity = c.Quantity,
+                Price = c.Price * c.Quantity  // ⭐ BẮT BUỘC
             }).ToList();
 
-            // Build request
+
             var request = new Models.CreateOrderRequest
             {
-                CustomerId = null, // nếu có userId và backend muốn gán, có thể truyền App.UserId (tùy API)
+                CustomerId = null,
                 CustomerName = CustomerName,
                 CustomerPhone = CustomerPhone,
                 CustomerEmail = string.IsNullOrWhiteSpace(CustomerEmail) ? null : CustomerEmail,
                 CustomerAddress = CustomerAddress,
                 OrderDetails = details,
-                PaymentMethod = PaymentMethod, // ensure matches backend enum strings
+                PaymentMethod = PaymentMethod,
                 AmountPaid = Total,
                 PromoId = NavigationData?.AppliedPromoId
             };
 
-            Debug.WriteLine("▶ PlaceOrder(): Gửi payload -> " + System.Text.Json.JsonSerializer.Serialize(request));
+            Debug.WriteLine("📦 Sending Order:");
+            Debug.WriteLine(System.Text.Json.JsonSerializer.Serialize(request, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
 
-            // gọi API
-            var apiResponse = await _api.CreateOrder(request);
+            var apiResult = await _api.CreateOrder(request);
 
-            if (apiResponse != null && apiResponse.Success)
+            if (apiResult.Success)
             {
-                // Success flow
-                StatusMessage = "Đặt hàng thành công!";
-                Debug.WriteLine("▶ PlaceOrder(): success -> " + apiResponse.Message);
-
-                // Clear local cart
                 await _cartService.ClearAsync();
 
-                // Điều hướng về MainPage (hoặc trang thông báo)
+                await ShowSuccessDialog();
+
                 var window = Window.Current;
-                var frame = window?.Content as Frame;
-                if (frame != null)
-                {
-                    // bạn có thể đổi về MainPage hoặc OrderSuccessPage nếu có
-                    frame.Navigate(typeof(StoreManagementMobile.Presentation.MainPage));
-                }
+                (window.Content as Frame)?.Navigate(typeof(StoreManagementMobile.Presentation.MainPage));
+                return;
             }
-            else
-            {
-                // API returned failure
-                var msg = apiResponse?.Message ?? "Tạo đơn thất bại.";
-                StatusMessage = $"Lỗi: {msg}";
-                Debug.WriteLine("▶ PlaceOrder(): failed -> " + msg);
-                // Không xoá cart, giữ nguyên cho user sửa
-            }
+
+            // API lỗi
+            StatusMessage = apiResult.Errors?.FirstOrDefault() ?? apiResult.Message ?? "Tạo đơn thất bại.";
         }
-        catch (Exception ex)
+        catch (System.Exception ex)
         {
-            Debug.WriteLine("💥 Exception PlaceOrder: " + ex);
-            StatusMessage = "Lỗi khi gửi đơn hàng: " + ex.Message;
+            StatusMessage = "Lỗi kết nối.";
+            Debug.WriteLine("💥 Exception: " + ex);
         }
         finally
         {
             IsBusy = false;
         }
     }
+
+    // ============================================================
+    // SUCCESS DIALOG
+    // ============================================================
+    private async Task ShowSuccessDialog()
+    {
+        var dialog = new ContentDialog
+        {
+            Title = "🎉 Đặt hàng thành công!",
+            Content = "Cảm ơn bạn đã mua hàng.",
+            CloseButtonText = "OK",
+            XamlRoot = (Window.Current.Content as FrameworkElement)?.XamlRoot
+        };
+
+        await dialog.ShowAsync();
+    }
+    
+    // ============================================================
+    // Điều hướng quay lại CartPag
+    // ============================================================    
+    
+    [RelayCommand]
+    public void CartPageNavigation()
+    {
+        try
+        {
+            var window = Window.Current;
+            var frame = window?.Content as Frame;
+    
+            if (frame != null)
+            {
+                frame.Navigate(typeof(StoreManagementMobile.Presentation.CartPage));
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine("💥 CartPageNavigation() Error: " + ex);
+            StatusMessage = "Không thể quay về giỏ hàng.";
+        }
+    }
+
 }

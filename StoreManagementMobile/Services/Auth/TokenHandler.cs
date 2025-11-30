@@ -27,6 +27,9 @@ public class TokenHandler : DelegatingHandler
         CancellationToken cancellationToken)
     {
         var token = GetToken();
+        // ⭐ THÊM DÒNG NÀY → cho phép token lấy từ App khi bạn fake login
+        if (string.IsNullOrEmpty(token))
+            token = App.UserToken;        
 
         if (!string.IsNullOrEmpty(token))
         {

@@ -18,5 +18,8 @@ public interface IStoreApi
     
     [Post("/api/orders")]
     Task<BackendResponse<OrderResponse>> CreateOrder([Body] CreateOrderRequest request);
-
+    
+    [Get("/api/Customer/{id}")]
+    Task<BackendResponse<Customer>> GetCustomerById(int id);
+    
 }

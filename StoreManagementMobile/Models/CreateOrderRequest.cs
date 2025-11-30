@@ -6,6 +6,8 @@ namespace StoreManagementMobile.Models
     {
         public int ProductId { get; set; }
         public int Quantity { get; set; }
+        // ⭐ BẮT BUỘC CÓ
+        public decimal Price { get; set; }
     }
 
     public class CreateOrderRequest
@@ -20,7 +22,7 @@ namespace StoreManagementMobile.Models
         public List<OrderItemDto> OrderDetails { get; set; } = new();
 
         // must match backend enum: Cash / Card / EWallet
-        public string PaymentMethod { get; set; } = "Cash";
+        public string PaymentMethod { get; set; } = "cash";
 
         public decimal AmountPaid { get; set; }
 
