@@ -44,17 +44,19 @@ public partial class App : Application
 #endif
                             });
 
+            
+
                     services.AddDbContext<AppDbContext>();
                     services.AddTransient<LoginViewModel>();
                     services.AddTransient<HomeViewModel>();
+                    services.AddTransient<ProductListViewModel>();
+                     services.AddTransient<ProductDetailViewModel>();
                 })
             );
 
         Host = builder.Build();
 
-        // --- CODE FIX QUAN TRỌNG TẠI ĐÂY ---
-
-        // 1. Thử lấy cửa sổ hiện tại của hệ thống (Android sẽ có cái này)
+     
         var window = Microsoft.UI.Xaml.Window.Current;
 
         // 2. Nếu không có (thường là trên Windows), thì mới tạo mới
