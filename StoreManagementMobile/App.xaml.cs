@@ -24,11 +24,9 @@ public partial class App : Application
     public static int UserId { get; set; } = 1;
 
     private Window? _mainWindow;
-
     public App()
     {
         this.InitializeComponent();
-        Debug.WriteLine("🔥 App(): Constructor chạy");
     }
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
@@ -70,11 +68,12 @@ public partial class App : Application
                         services.AddTransient<CartListViewModel>();
                         services.AddTransient<ProductDetailViewModel>();
                         services.AddTransient<CheckoutViewModel>();
-
+                        services.AddTransient<ProductListViewModel>();
 
                         // Services
                         services.AddSingleton<ICartService, CartService>();
                     })
+           
             );
 
             Host = builder.Build();
@@ -89,6 +88,8 @@ public partial class App : Application
             App.UserToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxIiwidW5pcXVlX25hbWUiOiJhZG1pbiIsInJvbGUiOiJBZG1pbiIsImp0aSI6Ijk2ZGEwNTU5LTg0ZDItNDk0ZS04NzZmLTdmZWE3NWU0ODYzZCIsImlhdCI6MTc2NDQ5MTc5MywibmJmIjoxNzY0NDkxNzkzLCJleHAiOjE3NjQ0OTUzOTMsImlzcyI6IlN0b3JlTWFuYWdlbWVudEFQSSIsImF1ZCI6IlN0b3JlTWFuYWdlbWVudENsaWVudCJ9.Vq9tc27Cpo1blykoSASOOzAnMBNJt8wxcRGR7fqtDMY";
             // ======================================================
 
+     
+        var window = Microsoft.UI.Xaml.Window.Current;
             // ============================
             // 3. SQLite Create DB
             // ============================
@@ -131,13 +132,11 @@ public partial class App : Application
                 window.Content = rootFrame;
             }
 
-            // ============================
-            // 6. Navigate vào CartPage
-            // ============================
-            Debug.WriteLine("➡ Điều hướng CartPage...");
-            Debug.WriteLine("➡ UserId:" +App.UserId);
-            Debug.WriteLine("➡ UserToken:" +App.UserToken);
+        // 4. Điều hướng vào trang Login
+        if (rootFrame.Content == null)
+        {
             rootFrame.Navigate(typeof(CartPage));
+        }
 
             // ============================
             // 7. Kích hoạt Window
