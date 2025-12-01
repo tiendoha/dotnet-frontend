@@ -1,0 +1,164 @@
+﻿<Page
+    x:Class="StoreManagementMobile.Presentation.CheckoutPage"
+    x:Name="RootPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:conv="using:StoreManagementMobile.Converters">
+
+    <!-- ================= RESOURCES ================= -->
+    <Page.Resources>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <conv:NotConverter x:Key="NotConverter" />
+    </Page.Resources>
+
+    <Grid Background="#F5F5F5">
+
+        <!-- ================= HEADER ================= -->
+
+
+        <TextBlock Text="Thanh toán"
+                   FontSize="28"
+                   FontWeight="Bold"
+                   Margin="20,20,20,10"/>
+
+
+        <!-- ================= BODY ================= -->
+        <ScrollViewer Margin="20,70,20,20">
+            <StackPanel Spacing="20">
+
+                <!-- ===================================================== -->
+                <!-- CARD: Customer Info -->
+                <!-- ===================================================== -->
+                <Border Background="White"
+                        CornerRadius="12"
+                        Padding="16"
+                        Shadow="{ThemeResource ShadowDepth4}">
+                    <StackPanel Spacing="14">
+
+                        <TextBlock Text="Thông tin khách hàng"
+                                   FontSize="20"
+                                   FontWeight="SemiBold"/>
+
+                        <StackPanel>
+                            <TextBlock Text="Họ và Tên" />
+                            <TextBox Text="{Binding CustomerName, Mode=TwoWay}"
+                                     PlaceholderText="Nhập họ tên"/>
+                        </StackPanel>
+
+                        <StackPanel>
+                            <TextBlock Text="Số điện thoại"/>
+                            <TextBox Text="{Binding CustomerPhone, Mode=TwoWay}"
+                                     InputScope="Number"
+                                     PlaceholderText="10 số"/>
+                        </StackPanel>
+
+                        <StackPanel>
+                            <TextBlock Text="Email"/>
+                            <TextBox Text="{Binding CustomerEmail, Mode=TwoWay}"
+                                     PlaceholderText="Nhập email"/>
+                        </StackPanel>
+
+                        <StackPanel>
+                            <TextBlock Text="Địa chỉ giao hàng"/>
+                            <TextBox Text="{Binding CustomerAddress, Mode=TwoWay}"
+                                     PlaceholderText="Nhập địa chỉ"/>
+                        </StackPanel>
+
+                        <Button Content="Quay lại"
+                            Background="#008F5A"
+                            Foreground="White"
+                            CornerRadius="8"
+                            FontSize="20"
+                            Padding="14"
+                            Command="{Binding CartPageNavigationCommand}"
+                            IsEnabled="{Binding IsBusy, Converter={StaticResource NotConverter}}"/>
+                    </StackPanel>
+                </Border>
+
+
+                <!-- ===================================================== -->
+                <!-- CARD: Payment Method -->
+                <!-- ===================================================== -->
+                <Border Background="White"
+                        CornerRadius="12"
+                        Padding="16"
+                        Shadow="{ThemeResource ShadowDepth4}">
+                    <StackPanel Spacing="10">
+
+                        <TextBlock Text="Phương thức thanh toán"
+                                   FontSize="20"
+                                   FontWeight="SemiBold"/>
+
+                        <RadioButton Content="Tiền mặt"
+                                     IsChecked="{Binding IsCash, Mode=TwoWay}"/>
+
+                        <RadioButton Content="Thẻ"
+                                     IsChecked="{Binding IsCard, Mode=TwoWay}"/>
+
+                        <RadioButton Content="Ví điện tử"
+                                     IsChecked="{Binding IsEWallet, Mode=TwoWay}"/>
+
+                    </StackPanel>
+                </Border>
+
+
+                <!-- ===================================================== -->
+                <!-- CARD: Order Summary -->
+                <!-- ===================================================== -->
+                <Border Background="White"
+                        CornerRadius="12"
+                        Padding="16"
+                        Shadow="{ThemeResource ShadowDepth4}">
+                    <StackPanel Spacing="10">
+
+                        <TextBlock Text="Tổng cộng"
+                                   FontSize="20"
+                                   FontWeight="SemiBold"/>
+
+                        <TextBlock Text="{Binding TotalText}"
+                                   FontSize="28"
+                                   FontWeight="Bold"
+                                   Foreground="#008F5A"/>
+
+                    </StackPanel>
+                </Border>
+
+
+                <!-- ===================================================== -->
+                <!-- STATUS MESSAGE -->
+                <!-- ===================================================== -->
+                <TextBlock Text="{Binding StatusMessage}"
+                           Foreground="Red"
+                           FontSize="14"
+                           TextWrapping="Wrap"/>
+
+
+                <!-- ===================================================== -->
+                <!-- BUTTON + LOADING -->
+                <!-- ===================================================== -->
+                <Grid>
+                    <!-- Normal button -->
+                    <Button Content="Đặt hàng"
+                            Background="#008F5A"
+                            Foreground="White"
+                            CornerRadius="8"
+                            FontSize="20"
+                            Padding="14"
+                            Command="{Binding PlaceOrderCommand}"
+                            IsEnabled="{Binding IsBusy, Converter={StaticResource NotConverter}}"/>
+
+                    <!-- Loading overlay -->
+                    <Grid Background="#AAFFFFFF"
+                          Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <ProgressRing IsActive="True"
+                                      Width="60" Height="60"
+                                      VerticalAlignment="Center"
+                                      HorizontalAlignment="Center"/>
+                    </Grid>
+                </Grid>
+
+            </StackPanel>
+        </ScrollViewer>
+
+    </Grid>
+</Page>

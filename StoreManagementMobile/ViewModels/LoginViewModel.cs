@@ -54,8 +54,20 @@ public partial class LoginViewModel : ObservableObject
             // Set a dummy token (or set real token if you want)
             App.UserToken = "dev-token";
 
-            // Raise navigation event to go to Product List
-            NavigateToMain?.Invoke();
+            if (response.Success && response.Data != null)
+            {
+                App.UserToken = response.Data.Token;
+                App.UserId = response.Data.User.UserId;
+                NavigateToMain?.Invoke();
+            }
+            else
+            {
+                ErrorMessage = response.Message ?? "Đăng nhập thất bại.";
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Lỗi: {ex.Message}";
         }
         finally
         {
