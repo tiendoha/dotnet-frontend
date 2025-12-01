@@ -1,3 +1,4 @@
+using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using StoreManagementMobile.Models;
@@ -5,9 +6,19 @@ using StoreManagementMobile.Services;
 
 namespace StoreManagementMobile.ViewModels;
 
+/// <summary>
+/// ViewModel xử lý login. Khi đăng nhập thành công sẽ raise event `NavigateToMain`.
+/// Page (LoginPage.xaml.cs) có thể đăng ký event này để điều hướng (Frame.Navigate hoặc Shell.GoToAsync).
+/// Ví dụ trong `LoginPage.xaml.cs`:
+/// <code>
+/// var vm = (LoginViewModel)DataContext;
+/// vm.NavigateToMain += () => { this.Frame?.Navigate(typeof(ProductListPage)); };
+/// </code>
+/// </summary>
 public partial class LoginViewModel : ObservableObject
 {
     private readonly IStoreApi _apiService;
+    // Event được raise khi login thành công. Page phải đăng ký để thực hiện điều hướng UI.
     public event Action? NavigateToMain;
 
     public LoginViewModel(IStoreApi apiService)
@@ -32,17 +43,16 @@ public partial class LoginViewModel : ObservableObject
     [RelayCommand]
     private async Task Login()
     {
+        // DEV: bỏ xác nhận backend - luôn coi là đăng nhập thành công
+        // LƯU Ý: Đây là chế độ phát triển. Đừng để mã này trong production.
         if (IsBusy) return;
         IsBusy = true;
         ErrorMessage = string.Empty;
 
         try
         {
-            // BackendResponse được định nghĩa trong Models/AuthModels.cs
-            var request = new LoginRequest { Username = Username, Password = Password };
-            
-            // Gọi API
-            var response = await _apiService.Login(request);
+            // Set a dummy token (or set real token if you want)
+            App.UserToken = "dev-token";
 
             if (response.Success && response.Data != null)
             {

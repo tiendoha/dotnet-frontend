@@ -19,8 +19,8 @@ public sealed partial class LoginPage : Page
 
         ViewModel.NavigateToMain += () => 
         {
-            // Chuyển sang MainPage
-            Frame.Navigate(typeof(MainPage));
+            // Chuyển sang ProductListPage (thay MainPage)
+            Frame.Navigate(typeof(ProductListPage));
         };
     }
 
