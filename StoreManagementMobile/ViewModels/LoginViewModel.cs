@@ -51,8 +51,16 @@ public partial class LoginViewModel : ObservableObject
 
         try
         {
-            // Set a dummy token (or set real token if you want)
+            // Set a dummy token và UserId
             App.UserToken = "dev-token";
+            App.UserId = 1;
+            
+            // Gọi event để điều hướng
+            NavigateToMain?.Invoke();
+            
+            /* Comment out phần call API thật để test nhanh
+            var request = new LoginRequest { Username = Username, Password = Password };
+            var response = await _apiService.Login(request);
 
             if (response.Success && response.Data != null)
             {
@@ -64,6 +72,7 @@ public partial class LoginViewModel : ObservableObject
             {
                 ErrorMessage = response.Message ?? "Đăng nhập thất bại.";
             }
+            */
         }
         catch (Exception ex)
         {

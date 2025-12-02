@@ -13,9 +13,13 @@ public partial class CartListViewModel : ObservableObject
 {
     private readonly ICartService _cartService;
     private readonly IStoreApi _api;
+    private bool _promotionsLoaded = false; // Cache flag
 
     public ObservableCollection<CartItem> Items { get; set; } = new();
     public ObservableCollection<SelectablePromotion> PromoList { get; set; } = new();
+    
+    [ObservableProperty]
+    private bool isLoading;
 
     // ================= MONEY =================
     [ObservableProperty]
@@ -42,7 +46,7 @@ public partial class CartListViewModel : ObservableObject
     [ObservableProperty]
     private SelectablePromotion? selectedPromo;
 
-    partial void OnSelectedPromoChanged(SelectablePromotion value)
+    partial void OnSelectedPromoChanged(SelectablePromotion? value)
     {
         // ❌ Không áp dụng mã ngay
         // ❌ Không tính giảm giá ở đây
@@ -75,6 +79,20 @@ public partial class CartListViewModel : ObservableObject
 
     public async Task LoadPromotions()
     {
+        // Chỉ load 1 lần (cache)
+        if (_promotionsLoaded && PromoList.Count > 0)
+        {
+            // Cập nhật IsEnabled dựa trên Subtotal hiện tại
+            foreach (var item in PromoList.Skip(1)) // Skip "Không áp dụng mã"
+            {
+                if (item.Promo != null)
+                {
+                    item.IsEnabled = Subtotal >= item.Promo.MinOrderAmount;
+                }
+            }
+            return;
+        }
+        
         try
         {
             var response = await _api.GetPromotions();
@@ -95,6 +113,8 @@ public partial class CartListViewModel : ObservableObject
                     IsEnabled = Subtotal >= p.MinOrderAmount
                 });
             }
+            
+            _promotionsLoaded = true;
         }
         catch (Exception ex)
         {
@@ -108,29 +128,36 @@ public partial class CartListViewModel : ObservableObject
     [RelayCommand]
     public async Task IncreaseQuantity(CartItem item)
     {
+        IsLoading = true;
         await _cartService.UpdateQuantityAsync(item.ProductId, item.Quantity + 1);
         await LoadItems();
-        await LoadPromotions();
+        // Chỉ cập nhật IsEnabled, không reload API
+        UpdatePromotionStates();
+        IsLoading = false;
     }
 
     [RelayCommand]
     public async Task DecreaseQuantity(CartItem item)
     {
+        IsLoading = true;
         if (item.Quantity > 1)
             await _cartService.UpdateQuantityAsync(item.ProductId, item.Quantity - 1);
         else
             await _cartService.RemoveItemAsync(item.ProductId);
 
         await LoadItems();
-        await LoadPromotions();
+        UpdatePromotionStates();
+        IsLoading = false;
     }
 
     [RelayCommand]
     public async Task RemoveItem(CartItem item)
     {
+        IsLoading = true;
         await _cartService.RemoveItemAsync(item.ProductId);
         await LoadItems();
-        await LoadPromotions();
+        UpdatePromotionStates();
+        IsLoading = false;
     }
 
     [RelayCommand]
@@ -138,9 +165,22 @@ public partial class CartListViewModel : ObservableObject
     {
         if (item.Quantity <= 0) item.Quantity = 1;
 
+        IsLoading = true;
         await _cartService.UpdateQuantityAsync(item.ProductId, item.Quantity);
         await LoadItems();
-        await LoadPromotions();
+        UpdatePromotionStates();
+        IsLoading = false;
+    }
+    
+    private void UpdatePromotionStates()
+    {
+        foreach (var item in PromoList.Skip(1))
+        {
+            if (item.Promo != null)
+            {
+                item.IsEnabled = Subtotal >= item.Promo.MinOrderAmount;
+            }
+        }
     }
 
     // ================= APPLY PROMO =================

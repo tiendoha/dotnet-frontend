@@ -32,10 +32,11 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- SEARCH + FILTER -->
+        <!-- SEARCH + FILTER + CART -->
         <Grid Grid.Row="0" ColumnSpacing="12" Margin="0,0,0,16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
@@ -85,6 +86,22 @@
                         </StackPanel>
                     </Flyout>
                 </Button.Flyout>
+            </Button>
+
+            <!-- CART BUTTON -->
+            <Button x:Name="btnCart"
+                    Grid.Column="2"
+                    Height="40"
+                    Width="50"
+                    CornerRadius="8"
+                    Padding="0"
+                    Background="#FF4444"
+                    BorderBrush="#CC0000"
+                    BorderThickness="2"
+                    Click="CartButton_Click">
+                <FontIcon Glyph="&#xE7BF;"
+                         FontSize="22"
+                         Foreground="White"/>
             </Button>
         </Grid>
 
@@ -143,7 +160,8 @@
                                         Foreground="White"
                                         CornerRadius="4"
                                         FontSize="12"
-                                        Padding="6,4"/>
+                                        Padding="6,4"
+                                        Click="AddToCart_Click"/>
                                 <Button Content="Xem chi tiết"
                                         Background="#8BC34A"
                                         Foreground="White"

@@ -14,85 +14,133 @@
             </Style>
     </Page.Resources>
 
-    <Grid Padding="16" RowDefinitions="2*, 1*">
+    <Grid Padding="16" RowDefinitions="Auto, *, Auto, Auto">
+
+        <!-- ====================== -->
+        <!--  HEADER                -->
+        <!-- ====================== -->
+        <RelativePanel Grid.Row="0" Margin="0,10,0,10">
+            <!-- Nút back phía trái -->
+            <Button x:Name="BackButton"
+                    Content="&#xE72B;"
+                    FontFamily="Segoe MDL2 Assets"
+                    Click="BackButton_Click"
+                    Width="40" Height="40"
+                    Background="#008F5A"
+                    Foreground="White"
+                    BorderThickness="0"
+                    CornerRadius="20"
+                    Padding="0"/>
+
+            <!-- Text căn giữa -->
+            <TextBlock Text="Giỏ hàng"
+                       FontSize="24"
+                       FontWeight="Bold"
+                       VerticalAlignment="Center"
+                       RelativePanel.AlignHorizontalCenterWithPanel="True"/>
+        </RelativePanel>
 
         <!-- ====================== -->
         <!--  2/3: CART LIST        -->
         <!-- ====================== -->
 
-        <ScrollViewer Grid.Row="0">
-            <StackPanel Spacing="12" Margin="0,30,0,0">
+        <ScrollViewer Grid.Row="1">
+            <StackPanel Spacing="12" Margin="0,10,0,10">
 
                 <ItemsControl ItemsSource="{Binding Items}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
 
-                            <Border Background="White" Padding="12" CornerRadius="10" Margin="0,0,0,10">
-                                <Grid ColumnSpacing="12">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="80" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
+                            <Border Background="White" Padding="12" CornerRadius="12" Margin="0,0,0,10" 
+                                    BorderBrush="#E0E0E0" BorderThickness="1">
+                                <Grid RowSpacing="8">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
 
-                                    <!-- IMAGE -->
-                                    <Border Width="80" Height="80" CornerRadius="6" Background="#EEE">
-                                        <Image Source="{Binding ImagePath}" Stretch="UniformToFill"/>
-                                    </Border>
+                                    <!-- ROW 1: IMAGE + NAME + PRICE + DELETE -->
+                                    <Grid Grid.Row="0" ColumnSpacing="12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="70"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
 
-                                    <!-- NAME + PRICE -->
-                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding ProductName}" FontSize="18" FontWeight="Bold" />
-                                        <TextBlock Text="{Binding PriceText}" Foreground="Gray" FontSize="14"/>
-                                    </StackPanel>
+                                        <!-- IMAGE -->
+                                        <Border Width="70" Height="70" CornerRadius="8" Background="#F5F5F5">
+                                            <Image Source="{Binding ImagePath}" Stretch="Uniform"/>
+                                        </Border>
 
-                                    <!-- QUANTITY + DELETE -->
-                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="6">
-
-                                        <!-- QUANTITY BUTTONS -->
-                                        <StackPanel Orientation="Horizontal" Spacing="10">
-
-                                            <!-- MINUS -->
-                                            <Button Width="36" Height="36"
-                                                    Background="#008F5A"
-                                                    BorderBrush="#008F5A" BorderThickness="2"
-                                                    CornerRadius="18"
-                                                    Content="−"
-                                                    FontSize="20" FontWeight="Bold"
-                                                    Foreground="Black"
-                                                    Command="{Binding DataContext.DecreaseQuantityCommand, ElementName=RootPage}"
-                                                    CommandParameter="{Binding}" />
-
-                                            <TextBox Text="{Binding Quantity, Mode=TwoWay}"
-                                                     Width="60"
-                                                     HorizontalAlignment="Center"
-                                                     VerticalAlignment="Center"
-                                                     FontSize="20"
-                                                     InputScope="Number"
-                                                     LostFocus="QuantityTextBox_LostFocus" />
-
-
-                                            <!-- PLUS -->
-                                            <Button Width="36" Height="36"
-                                                    Background="#008F5A"
-                                                    BorderBrush="#008F5A" BorderThickness="2"
-                                                    CornerRadius="18"
-                                                    Content="+"
-                                                    FontSize="20" FontWeight="Bold"
-                                                    Foreground="Black"
-                                                    Command="{Binding DataContext.IncreaseQuantityCommand, ElementName=RootPage}"
-                                                    CommandParameter="{Binding}" />
-
+                                        <!-- NAME + PRICE -->
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                                            <TextBlock Text="{Binding ProductName}" 
+                                                       FontSize="16" 
+                                                       FontWeight="SemiBold"
+                                                       TextWrapping="Wrap"
+                                                       MaxLines="2"/>
+                                            <TextBlock Text="{Binding PriceText}" 
+                                                       Foreground="#FF4444" 
+                                                       FontSize="15"
+                                                       FontWeight="Bold"/>
                                         </StackPanel>
 
-                                        <!-- DELETE -->
-                                        <Button Content="Xóa"
-                                                Foreground="White"
-                                                Background="#008F5A"
+                                        <!-- DELETE BUTTON (Icon) -->
+                                        <Button Grid.Column="2"
+                                                Width="40" Height="40"
+                                                Background="#FF4444"
+                                                CornerRadius="20"
+                                                Padding="0"
                                                 Command="{Binding DataContext.RemoveItemCommand, ElementName=RootPage}"
-                                                CommandParameter="{Binding}" />
+                                                CommandParameter="{Binding}">
+                                            <FontIcon Glyph="&#xE74D;" 
+                                                     FontSize="18"
+                                                     Foreground="White"/>
+                                        </Button>
+                                    </Grid>
 
-                                    </StackPanel>
+                                    <!-- ROW 2: QUANTITY CONTROLS -->
+                                    <Grid Grid.Row="1" HorizontalAlignment="Right">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock Text="Số lượng:" 
+                                                       VerticalAlignment="Center"
+                                                       FontSize="14"
+                                                       Foreground="Gray"/>
+                                            
+                                            <!-- MINUS -->
+                                            <Button Width="32" Height="32"
+                                                    Background="#E0E0E0"
+                                                    CornerRadius="16"
+                                                    Padding="0"
+                                                    Command="{Binding DataContext.DecreaseQuantityCommand, ElementName=RootPage}"
+                                                    CommandParameter="{Binding}">
+                                                <TextBlock Text="−" 
+                                                          FontSize="18" 
+                                                          FontWeight="Bold"
+                                                          Foreground="#333"/>
+                                            </Button>
+
+                                            <TextBlock Text="{Binding Quantity}"
+                                                       VerticalAlignment="Center"
+                                                       FontSize="16"
+                                                       FontWeight="Bold"
+                                                       Width="30"
+                                                       TextAlignment="Center"/>
+
+                                            <!-- PLUS -->
+                                            <Button Width="32" Height="32"
+                                                    Background="#008F5A"
+                                                    CornerRadius="16"
+                                                    Padding="0"
+                                                    Command="{Binding DataContext.IncreaseQuantityCommand, ElementName=RootPage}"
+                                                    CommandParameter="{Binding}">
+                                                <TextBlock Text="+" 
+                                                          FontSize="18" 
+                                                          FontWeight="Bold"
+                                                          Foreground="White"/>
+                                            </Button>
+                                        </StackPanel>
+                                    </Grid>
 
                                 </Grid>
                             </Border>
@@ -106,51 +154,87 @@
 
 
         <!-- ====================== -->
-        <!--  1/3: FOOTER           -->
+        <!--  3/3: FOOTER - CHỈ SUMMARY -->
         <!-- ====================== -->
 
-        <StackPanel Grid.Row="1" Spacing="12" Margin="0,10,0,0">
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" MaxHeight="300">
+            <StackPanel Spacing="10" Margin="0,10,0,5">
 
-            <TextBlock Text="Mã khuyến mãi:" FontWeight="SemiBold"/>
+                <TextBlock Text="Mã khuyến mãi:" FontWeight="SemiBold" FontSize="14"/>
 
-            <ComboBox ItemsSource="{Binding PromoList}"
-                      SelectedItem="{Binding SelectedPromo, Mode=TwoWay}"
-                      MaxDropDownHeight="250">
-                <ComboBox.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding DisplayText}"
-                                   Foreground="{Binding IsEnabled, Converter={StaticResource BoolToColorConverter}}" />
-                    </DataTemplate>
-                </ComboBox.ItemTemplate>
-            </ComboBox>
+                <ComboBox ItemsSource="{Binding PromoList}"
+                          SelectedItem="{Binding SelectedPromo, Mode=TwoWay}"
+                          MaxDropDownHeight="200">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding DisplayText}"
+                                       Foreground="{Binding IsEnabled, Converter={StaticResource BoolToColorConverter}}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
 
-
-            <!-- APPLY BUTTON -->
-            <Button Content="Áp dụng"
-                    Background="#008F5A"
-                    Foreground="White"
-                    CornerRadius="6"
-                    Command="{Binding ApplyPromoCommand}" />
-
-            <!-- SUMMARY -->
-            <StackPanel>
-                <TextBlock Text="Tạm tính:" />
-                <TextBlock Text="{Binding SubtotalText}" FontSize="18" FontWeight="Bold" />
-
-                <TextBlock Text="Giảm giá:" Margin="0,6,0,0"/>
-                <TextBlock Text="{Binding DiscountText}" FontSize="16" Foreground="#008F5A"/>
-
-                <TextBlock Text="Tổng cộng:" Margin="0,10,0,0"/>
-                <TextBlock Text="{Binding TotalText}" FontSize="24" FontWeight="Bold"/>
-
-                <Button Content="Tiếp tục thanh toán"
+                <!-- APPLY BUTTON -->
+                <Button Content="Áp dụng"
                         Background="#008F5A"
                         Foreground="White"
                         CornerRadius="6"
-                        Command="{Binding ContinuePaymentCommand}" />
-            </StackPanel>
+                        Height="40"
+                        Command="{Binding ApplyPromoCommand}" />
 
-        </StackPanel>
+                <!-- SUMMARY -->
+                <Border Background="#F5F5F5" 
+                        CornerRadius="8" 
+                        Padding="12"
+                        Margin="0,5,0,0">
+                    <StackPanel Spacing="6">
+                        <Grid>
+                            <TextBlock Text="Tạm tính:" FontSize="14"/>
+                            <TextBlock Text="{Binding SubtotalText}" 
+                                       FontSize="16" 
+                                       FontWeight="SemiBold"
+                                       HorizontalAlignment="Right"/>
+                        </Grid>
+
+                        <Grid>
+                            <TextBlock Text="Giảm giá:" FontSize="14"/>
+                            <TextBlock Text="{Binding DiscountText}" 
+                                       FontSize="16" 
+                                       Foreground="#008F5A"
+                                       FontWeight="SemiBold"
+                                       HorizontalAlignment="Right"/>
+                        </Grid>
+
+                        <Rectangle Fill="#CCCCCC" Height="1" Margin="0,4"/>
+
+                        <Grid>
+                            <TextBlock Text="Tổng cộng:" 
+                                       FontSize="16"
+                                       FontWeight="Bold"/>
+                            <TextBlock Text="{Binding TotalText}" 
+                                       FontSize="20" 
+                                       FontWeight="Bold"
+                                       Foreground="#008F5A"
+                                       HorizontalAlignment="Right"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- ====================== -->
+        <!--  NÚT THANH TOÁN LUÔN CỐ ĐỊNH Ở DƯỚI CÙNG -->
+        <!-- ====================== -->
+        <Button Grid.Row="3"
+                Content="Tiếp tục thanh toán"
+                Background="#008F5A"
+                Foreground="White"
+                CornerRadius="8"
+                Height="52"
+                FontSize="18"
+                FontWeight="Bold"
+                Margin="0,5,0,10"
+                Command="{Binding ContinuePaymentCommand}" />
 
     </Grid>
 </Page>

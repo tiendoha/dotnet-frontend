@@ -3,27 +3,28 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
 using StoreManagementMobile.Presentation;
-using StoreManagementMobile.Models; // Giả định ProductResponse nằm trong Models
-using System.Threading.Tasks; // Cần thiết cho Task.Run và async/await
-using System.Diagnostics; // Cần thiết cho Debug.WriteLine
+using StoreManagementMobile.Models;
+using StoreManagementMobile.Services;
+using System.Threading.Tasks;
+using System.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace StoreManagementMobile.Presentation
 {
     public sealed partial class ProductListPage : Page
     {
-        // Giả định ProductListViewModel đã được định nghĩa và có các phương thức LoadProductsAsync, 
-        // LoadCategoriesAsync, RefreshProducts, LoadMoreProductsAsync, ApplySortingAsync, ImmediateSearchAsync
         public ProductListViewModel ViewModel { get; set; } = new ProductListViewModel();
+        private readonly ICartService _cartService;
 
         public ProductListPage()
         {
             this.InitializeComponent();
             this.DataContext = ViewModel;
 
-            // Thiết lập chế độ sắp xếp mặc định nếu SortOptions đã được đặt tên trong XAML 
-            // và chứa các RadioButton (Giữ lại logic ban đầu của người dùng)
-            // Tuy nhiên, việc này nên được đảm bảo trong XAML (SelectedItem) hoặc ViewModel.
-            // Nếu SortOptions.SelectedItem được set trong XAML, nó sẽ được áp dụng.
+            // Lấy CartService từ DI
+            var app = (App)Application.Current;
+            _cartService = app.Host.Services.GetRequiredService<ICartService>();
+
             if (SortOptions.SelectedItem is RadioButton initialRadioButton)
             {
                 ApplySortFromTag(initialRadioButton.Tag.ToString());
@@ -154,6 +155,47 @@ private void ScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEven
 
         // NÃO: KHÔNG dùng Task.Run (ảnh hưởng Dispatcher)
         _ = ViewModel.LoadMoreProductsAsync();
+    }
+}
+
+private void CartButton_Click(object sender, RoutedEventArgs e)
+{
+    // Điều hướng sang trang giỏ hàng
+    this.Frame.Navigate(typeof(CartPage));
+}
+
+private async void AddToCart_Click(object sender, RoutedEventArgs e)
+{
+    if (sender is Button button && button.DataContext is ProductResponse product)
+    {
+        try
+        {
+            // Tạo Product từ ProductResponse
+            var productToAdd = new Product
+            {
+                ProductId = product.ProductId,
+                ProductName = product.ProductName ?? "",
+                ImagePath = product.ImageUrl ?? "",
+                Price = product.Price
+            };
+
+            // Thêm vào giỏ hàng (SQLite)
+            await _cartService.AddItemAsync(productToAdd, 1);
+
+            // Hiển thị thông báo
+            var dialog = new ContentDialog
+            {
+                Title = "Thành công",
+                Content = $"Đã thêm '{product.ProductName}' vào giỏ hàng",
+                CloseButtonText = "OK",
+                XamlRoot = this.XamlRoot
+            };
+            await dialog.ShowAsync();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"💥 Lỗi khi thêm vào giỏ: {ex}");
+        }
     }
 }
 

@@ -131,10 +131,10 @@ public partial class App : Application
                 window.Content = rootFrame;
             }
 
-        // 4. Điều hướng vào trang Login
+        // 4. Điều hướng vào trang ProductList
         if (rootFrame.Content == null)
         {
-            rootFrame.Navigate(typeof(CartPage));
+            rootFrame.Navigate(typeof(ProductListPage));
         }
 
             // ============================
