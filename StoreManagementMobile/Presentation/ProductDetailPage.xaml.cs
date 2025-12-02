@@ -54,25 +54,34 @@ namespace StoreManagementMobile.Presentation
             }
         }
         
-        // 🔥 MỚI: Xử lý nút Mua ngay
-        private async void BuyNowButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        // 🔥 MỚI: Xử lý nút Mua ngay - KHÔNG lưu vào giỏ hàng
+        private void BuyNowButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             try
             {
-                // 1. Thêm sản phẩm vào giỏ hàng (SQLite)
-                await ViewModel.AddToCart();
-                
-                // 2. Tạo dữ liệu để truyền sang CheckoutPage
+                // KHÔNG thêm vào SQLite - chỉ truyền thông tin sang CheckoutPage
                 var checkoutData = new CheckoutNavigationData
                 {
                     Subtotal = ViewModel.ProductPrice * ViewModel.Quantity,
                     Discount = 0,
                     Total = ViewModel.ProductPrice * ViewModel.Quantity,
                     AppliedPromoId = null,
-                    IsFromBuyNow = true // Đánh dấu là từ "Mua ngay"
+                    IsFromBuyNow = true, // Đánh dấu là "Mua ngay"
+                    
+                    // Truyền thêm thông tin sản phẩm để tạo đơn hàng
+                    BuyNowProduct = new CartItem
+                    {
+                        ProductId = ViewModel.ProductId,
+                        ProductName = ViewModel.ProductName,
+                        Price = ViewModel.ProductPrice,
+                        Quantity = ViewModel.Quantity,
+                        ImagePath = ViewModel.ProductImageUrl
+                    }
                 };
                 
-                // 3. Điều hướng trực tiếp sang CheckoutPage
+                System.Diagnostics.Debug.WriteLine($"🛒 Mua ngay: {ViewModel.ProductName} x{ViewModel.Quantity}");
+                
+                // Điều hướng trực tiếp sang CheckoutPage
                 this.Frame.Navigate(typeof(CheckoutPage), checkoutData);
             }
             catch (Exception ex)

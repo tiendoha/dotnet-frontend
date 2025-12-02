@@ -9,4 +9,7 @@ public class CheckoutNavigationData
     
     // Flag để biết có phải từ "Mua ngay" không
     public bool IsFromBuyNow { get; set; } = false;
+    
+    // Sản phẩm "Mua ngay" (không lưu vào giỏ hàng)
+    public CartItem? BuyNowProduct { get; set; }
 }

@@ -43,40 +43,37 @@ public partial class LoginViewModel : ObservableObject
     [RelayCommand]
     private async Task Login()
     {
-        // DEV: bỏ xác nhận backend - luôn coi là đăng nhập thành công
-        // LƯU Ý: Đây là chế độ phát triển. Đừng để mã này trong production.
         if (IsBusy) return;
         IsBusy = true;
         ErrorMessage = string.Empty;
 
         try
         {
-            // Set a dummy token và UserId
-            App.UserToken = "dev-token";
-            App.UserId = 1;
-            
-            // Gọi event để điều hướng
-            NavigateToMain?.Invoke();
-            
-            /* Comment out phần call API thật để test nhanh
+            // Gọi API login thật
             var request = new LoginRequest { Username = Username, Password = Password };
             var response = await _apiService.Login(request);
 
             if (response.Success && response.Data != null)
             {
+                // Lưu token và userId
                 App.UserToken = response.Data.Token;
                 App.UserId = response.Data.User.UserId;
+                
+                System.Diagnostics.Debug.WriteLine($"✅ Login thành công! UserId={App.UserId}");
+                
+                // Điều hướng sang ProductListPage
                 NavigateToMain?.Invoke();
             }
             else
             {
                 ErrorMessage = response.Message ?? "Đăng nhập thất bại.";
+                System.Diagnostics.Debug.WriteLine($"❌ Login failed: {ErrorMessage}");
             }
-            */
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Lỗi: {ex.Message}";
+            ErrorMessage = $"Lỗi kết nối: {ex.Message}";
+            System.Diagnostics.Debug.WriteLine($"💥 Login exception: {ex}");
         }
         finally
         {

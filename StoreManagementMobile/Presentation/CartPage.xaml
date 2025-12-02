@@ -38,6 +38,18 @@
                        FontWeight="Bold"
                        VerticalAlignment="Center"
                        RelativePanel.AlignHorizontalCenterWithPanel="True"/>
+            
+            <!-- Nút test API phía phải -->
+            <Button x:Name="TestApiButton"
+                    Content="🔧"
+                    Click="TestApiButton_Click"
+                    Width="40" Height="40"
+                    Background="#FF6B6B"
+                    Foreground="White"
+                    BorderThickness="0"
+                    CornerRadius="20"
+                    Padding="0"
+                    RelativePanel.AlignRightWithPanel="True"/>
         </RelativePanel>
 
         <!-- ====================== -->

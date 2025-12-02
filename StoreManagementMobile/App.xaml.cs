@@ -131,10 +131,10 @@ public partial class App : Application
                 window.Content = rootFrame;
             }
 
-        // 4. Điều hướng vào trang ProductList
+        // 4. Điều hướng vào trang Login để lấy token
         if (rootFrame.Content == null)
         {
-            rootFrame.Navigate(typeof(ProductListPage));
+            rootFrame.Navigate(typeof(LoginPage));
         }
 
             // ============================
