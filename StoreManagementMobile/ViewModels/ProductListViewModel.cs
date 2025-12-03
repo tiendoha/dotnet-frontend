@@ -57,17 +57,21 @@ namespace StoreManagementMobile.Presentation
         [ObservableProperty]
         private string _errorMessage = string.Empty;
 
-        public ProductListViewModel()
+      public ProductListViewModel()
+    {
+        _fullProductList = CreateSampleProducts();
+
+        if (Items.Count == 0)
         {
-            // Dữ liệu mẫu (chỉ dùng tạm, LoadProductsAsync sẽ ghi đè)
-            _fullProductList = CreateSampleProducts(); 
             Items = new ObservableCollection<ProductResponse>(_fullProductList);
+
             Task.Run(async () =>
             {
                 await LoadCategoriesAsync();
-                await LoadProductsAsync(); 
+                await LoadProductsAsync();
             });
         }
+    }
 
         private void EnsureAbsoluteImageUrl(ProductResponse product)
         {
@@ -296,14 +300,16 @@ public async Task LoadMoreProductsAsync()
             }
         } 
 
-        partial void OnSelectedCategoryIdChanged(int value)
-        {
-            // Hủy debounce tìm kiếm cũ (nếu có) khi người dùng đổi Category
-            _searchCts?.Cancel(); 
-            Task.Run(ApplyCategoryFilter);
-        }
+     partial void OnSelectedCategoryIdChanged(int value)
+            {
+                _debounceCts?.Cancel();
+                _immediateCts?.Cancel();
 
-        // -------------------------------
+                Task.Run(ApplyCategoryFilter);
+            }
+
+
+                    // -------------------------------
         // 🔥 HÀM TÌM KIẾM NGAY LẬP TỨC (Khi nhấn Enter hoặc nút Search)
         // -------------------------------
        // Tự động tạo ImmediateSearchCommand
@@ -313,7 +319,6 @@ public async Task ImmediateSearchAsync()
 {
     _immediateCts?.Cancel();
     _immediateCts?.Dispose();
-
     _immediateCts = new CancellationTokenSource();
     var token = _immediateCts.Token;
 
@@ -321,11 +326,6 @@ public async Task ImmediateSearchAsync()
     await LoadProductsAsync(append: false, cancellationToken: token); // append = false
 }
 
-
-
-        // -------------------------------
-        // HÀM TÌM KIẾM (Debounce khi đang gõ)
-        // -------------------------------
    partial void OnSearchQueryChanged(string value)
 {
     if (string.IsNullOrWhiteSpace(value))
