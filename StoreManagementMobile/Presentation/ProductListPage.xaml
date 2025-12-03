@@ -32,10 +32,11 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- SEARCH + FILTER + CART -->
+        <!-- SEARCH + FILTER + HISTORY + CART -->
         <Grid Grid.Row="0" ColumnSpacing="12" Margin="0,0,0,16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
@@ -88,9 +89,24 @@
                 </Button.Flyout>
             </Button>
 
+            <!-- HISTORY BUTTON -->
+            <Button x:Name="btnHistory"
+                    Grid.Column="2"
+                    Height="40"
+                    Width="50"
+                    CornerRadius="8"
+                    Padding="0"
+                    Background="#FF9800"
+                    BorderBrush="#F57C00"
+                    BorderThickness="2"
+                    Click="HistoryButton_Click"
+                    ToolTipService.ToolTip="Lịch sử đơn hàng">
+                <FontIcon Glyph="&#xE81C;" FontSize="22" Foreground="White"/>
+            </Button>
+
             <!-- CART BUTTON -->
             <Button x:Name="btnCart"
-                    Grid.Column="2"
+                    Grid.Column="3"
                     Height="40"
                     Width="50"
                     CornerRadius="8"

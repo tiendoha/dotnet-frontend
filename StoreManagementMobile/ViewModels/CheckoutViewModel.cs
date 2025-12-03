@@ -16,6 +16,7 @@ public partial class CheckoutViewModel : ObservableObject
 {
     private readonly ICartService _cartService;
     private readonly IStoreApi _api;
+    private readonly IOrderHistoryService _orderHistoryService;
 
     // Navigation data
     public CheckoutNavigationData NavigationData { get; private set; } = new();
@@ -49,10 +50,11 @@ public partial class CheckoutViewModel : ObservableObject
     [ObservableProperty] private bool isBusy;
     [ObservableProperty] private string statusMessage = "";
 
-    public CheckoutViewModel(ICartService cartService, IStoreApi api)
+    public CheckoutViewModel(ICartService cartService, IStoreApi api, IOrderHistoryService orderHistoryService)
     {
         _cartService = cartService;
         _api = api;
+        _orderHistoryService = orderHistoryService;
     }
 
     // ============================================================
@@ -240,7 +242,26 @@ public partial class CheckoutViewModel : ObservableObject
 
             if (apiResult.Success)
             {
-                // Chỉ clear giỏ hàng nếu KHÔNG phải "Mua ngay"
+                // 1️⃣ Lưu vào SQLite OrderHistory
+                var orderHistory = new OrderHistory
+                {
+                    OrderId = apiResult.Data?.OrderId ?? 0,
+                    OrderDate = DateTime.Now,
+                    CustomerName = CustomerName,
+                    CustomerPhone = CustomerPhone,
+                    CustomerAddress = CustomerAddress,
+                    TotalAmount = Subtotal,
+                    DiscountAmount = Discount,
+                    FinalAmount = Total,
+                    PaymentMethod = PaymentMethod,
+                    Status = "Completed",
+                    OrderDetailsJson = System.Text.Json.JsonSerializer.Serialize(details)
+                };
+                
+                await _orderHistoryService.AddOrderAsync(orderHistory);
+                Debug.WriteLine($"💾 Đã lưu OrderHistory vào SQLite: OrderId={orderHistory.OrderId}");
+                
+                // 2️⃣ Chỉ clear giỏ hàng nếu KHÔNG phải "Mua ngay"
                 if (!NavigationData.IsFromBuyNow)
                 {
                     await _cartService.ClearAsync();
@@ -251,7 +272,7 @@ public partial class CheckoutViewModel : ObservableObject
                     Debug.WriteLine("✅ 'Mua ngay' - Giữ nguyên giỏ hàng");
                 }
 
-                // Chuyển sang trang OrderSuccessPage thay vì hiện alert
+                // 3️⃣ Chuyển sang trang OrderSuccessPage
                 var successData = new StoreManagementMobile.Presentation.OrderSuccessData
                 {
                     Total = Total,

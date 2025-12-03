@@ -25,8 +25,9 @@ public sealed partial class CheckoutPage : Page
             ViewModel.Initialize(nav);
             _isFromBuyNow = nav.IsFromBuyNow; // Lưu flag
             
-            // ⭐ Tải thông tin khách hàng khi mở trang
-            _ = ViewModel.LoadInfoCustomer();
+            // 👉 Đã bỏ auto-load thông tin khách hàng
+            // User sẽ tự nhập hoặc có thể thêm nút "Tải thông tin" nếu cần
+            // _ = ViewModel.LoadInfoCustomer();
         }
     }
     

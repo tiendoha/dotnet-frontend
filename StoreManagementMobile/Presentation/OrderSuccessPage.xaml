@@ -13,18 +13,18 @@
             Padding="30">
             
             <!-- Icon dấu tích xanh -->
-            <Ellipse 
+            <Border 
                 Width="120" 
                 Height="120" 
-                Fill="#4CAF50">
-            </Ellipse>
-            <TextBlock 
-                Text="✓"
-                FontSize="80"
-                FontWeight="Bold"
-                Foreground="White"
-                HorizontalAlignment="Center"
-                Margin="0,-120,0,0"/>
+                Background="#4CAF50"
+                CornerRadius="60">
+                <FontIcon 
+                    Glyph="&#xE73E;" 
+                    FontSize="60" 
+                    Foreground="White"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"/>
+            </Border>
             
             <!-- Title -->
             <TextBlock 
@@ -37,7 +37,7 @@
             
             <!-- Message -->
             <TextBlock 
-                Text="Cảm ơn bạn đã mua hàng! 🙏"
+                Text="Cảm ơn bạn đã mua hàng!"
                 FontSize="16"
                 HorizontalAlignment="Center"
                 Foreground="#666"
@@ -52,36 +52,60 @@
                 BorderThickness="1"
                 Margin="0,10,0,0">
                 <StackPanel Spacing="12">
-                    <TextBlock>
-                        <Run Text="💰 Tổng tiền: " FontWeight="SemiBold"/>
-                        <Run x:Name="TotalText" FontWeight="Bold" FontSize="18" Foreground="#4CAF50"/>
-                    </TextBlock>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <FontIcon Grid.Column="0" Glyph="&#xE8EC;" FontSize="16" Foreground="#4CAF50" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1" VerticalAlignment="Center">
+                            <Run Text="Tổng tiền: " FontWeight="SemiBold"/>
+                            <Run x:Name="TotalText" FontWeight="Bold" FontSize="18" Foreground="#4CAF50"/>
+                        </TextBlock>
+                    </Grid>
                     
-                    <TextBlock>
-                        <Run Text="📍 Giao tới: " FontWeight="SemiBold"/>
-                        <Run x:Name="CustomerNameText"/>
-                    </TextBlock>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <FontIcon Grid.Column="0" Glyph="&#xE7C3;" FontSize="16" Foreground="#666" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1" VerticalAlignment="Center">
+                            <Run Text="Giao tới: " FontWeight="SemiBold"/>
+                            <Run x:Name="CustomerNameText"/>
+                        </TextBlock>
+                    </Grid>
                     
-                    <TextBlock>
-                        <Run Text="📞 Liên hệ: " FontWeight="SemiBold"/>
-                        <Run x:Name="CustomerPhoneText"/>
-                    </TextBlock>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <FontIcon Grid.Column="0" Glyph="&#xE717;" FontSize="16" Foreground="#666" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1" VerticalAlignment="Center">
+                            <Run Text="Liên hệ: " FontWeight="SemiBold"/>
+                            <Run x:Name="CustomerPhoneText"/>
+                        </TextBlock>
+                    </Grid>
                 </StackPanel>
             </Border>
             
             <!-- Nút quay về trang chủ -->
             <Button 
-                Content="🏠 Quay về trang chủ"
-                Click="BackToHome_Click"
                 HorizontalAlignment="Stretch"
+                Height="50"
+                CornerRadius="8"
                 Background="#4CAF50"
                 Foreground="White"
                 FontSize="16"
                 FontWeight="SemiBold"
-                Height="50"
-                CornerRadius="8"
                 BorderThickness="0"
-                Margin="0,10,0,0">
+                Margin="0,10,0,0"
+                Click="BackToHome_Click">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon Glyph="&#xE80F;" FontSize="20"/>
+                    <TextBlock Text="Quay về trang chủ" VerticalAlignment="Center"/>
+                </StackPanel>
             </Button>
             
         </StackPanel>

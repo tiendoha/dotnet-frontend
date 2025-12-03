@@ -7,6 +7,7 @@ namespace StoreManagementMobile.Services.LocalDb;
 public class AppDbContext : DbContext
 {
     public DbSet<CartItem> CartItems => Set<CartItem>();
+    public DbSet<OrderHistory> OrderHistories => Set<OrderHistory>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

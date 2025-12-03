@@ -72,6 +72,7 @@ public partial class App : Application
 
                         // Services
                         services.AddSingleton<ICartService, CartService>();
+                        services.AddSingleton<IOrderHistoryService, OrderHistoryService>();
                     })
            
             );
@@ -98,22 +99,18 @@ public partial class App : Application
                 var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
                 Debug.WriteLine("📦 EnsureCreated() database...");
+                
+                // 👉 Đã comment để KHÔNG xóa database mỗi lần chạy app
+                // try
+                // {
+                //     db.Database.EnsureDeleted();
+                //     Debug.WriteLine("🗑️ Đã xóa database cũ");
+                // }
+                // catch { }
+                
                 db.Database.EnsureCreated();
-
-                // ⭐ SEED TEST CART
-                if (!db.CartItems.Any(c => c.UserId == App.UserId))
-                {
-                    db.CartItems.Add(new CartItem
-                    {
-                        UserId = App.UserId,
-                        ProductId = 19,
-                        ProductName = "Bếp gas mini",
-                        Price = 416845.00M,
-                        Quantity = 2,
-                        ImagePath = "/images/products/product_19.png"
-                    });
-                    db.SaveChanges();
-                }
+                Debug.WriteLine("✅ Database đã được tạo với bảng OrderHistories");
+                
             }
 
             // ============================

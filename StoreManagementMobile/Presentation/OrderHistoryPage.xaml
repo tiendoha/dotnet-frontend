@@ -1,0 +1,157 @@
+<Page
+    x:Class="StoreManagementMobile.Presentation.OrderHistoryPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="#F5F5F5">
+
+    <Grid Padding="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- HEADER -->
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Button x:Name="BackButton"
+                    Grid.Column="0"
+                    Click="BackButton_Click"
+                    Width="40" Height="40"
+                    Background="#008F5A"
+                    Foreground="White"
+                    BorderThickness="0"
+                    CornerRadius="20"
+                    Padding="0"
+                    Margin="0,0,12,0">
+                <FontIcon Glyph="&#xE72B;" FontSize="16"/>
+            </Button>
+
+            <TextBlock Grid.Column="1"
+                       Text="Lịch sử đơn hàng"
+                       FontSize="24"
+                       FontWeight="Bold"
+                       VerticalAlignment="Center"/>
+        </Grid>
+
+        <!-- ORDER LIST -->
+        <ScrollViewer Grid.Row="1">
+            <StackPanel Spacing="12">
+                <TextBlock x:Name="EmptyMessage"
+                           Text="Chưa có đơn hàng nào"
+                           FontSize="16"
+                           Foreground="#999"
+                           HorizontalAlignment="Center"
+                           Margin="0,50,0,0"
+                           Visibility="Collapsed"/>
+
+                <ItemsControl x:Name="OrderList">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="White"
+                                    CornerRadius="12"
+                                    Padding="16"
+                                    BorderBrush="#E0E0E0"
+                                    BorderThickness="1"
+                                    Margin="0,0,0,12">
+                                <StackPanel Spacing="8">
+                                    <!-- Header -->
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="{Binding OrderDateText}"
+                                                       FontSize="14"
+                                                       Foreground="#666"/>
+                                            <TextBlock FontSize="16" FontWeight="SemiBold">
+                                                <Run Text="Đơn hàng #"/>
+                                                <Run Text="{Binding OrderId}"/>
+                                            </TextBlock>
+                                        </StackPanel>
+
+                                        <Border Grid.Column="1"
+                                                Background="#4CAF50"
+                                                CornerRadius="12"
+                                                Padding="8,4">
+                                            <TextBlock Text="{Binding Status}"
+                                                       FontSize="12"
+                                                       Foreground="White"
+                                                       FontWeight="SemiBold"/>
+                                        </Border>
+                                    </Grid>
+
+                                    <Border Height="1" Background="#E0E0E0"/>
+
+                                    <!-- Customer Info -->
+                                    <StackPanel Spacing="4">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <FontIcon Grid.Column="0" Glyph="&#xE77B;" FontSize="14" Foreground="#666" Margin="0,0,8,0"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding CustomerName}"/>
+                                        </Grid>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <FontIcon Grid.Column="0" Glyph="&#xE717;" FontSize="14" Foreground="#666" Margin="0,0,8,0"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding CustomerPhone}"/>
+                                        </Grid>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <FontIcon Grid.Column="0" Glyph="&#xE707;" FontSize="14" Foreground="#666" Margin="0,0,8,0"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding CustomerAddress}" TextWrapping="Wrap"/>
+                                        </Grid>
+                                    </StackPanel>
+
+                                    <Border Height="1" Background="#E0E0E0"/>
+
+                                    <!-- Price Info -->
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Grid.Column="0"
+                                                   Text="Tổng tiền:"
+                                                   FontSize="14"
+                                                   VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding TotalText}"
+                                                   FontSize="18"
+                                                   FontWeight="Bold"
+                                                   Foreground="#F22613"/>
+                                    </Grid>
+
+                                    <!-- View Details Button -->
+                                    <Button Content="Xem chi tiết"
+                                            Click="ViewDetails_Click"
+                                            Tag="{Binding OrderId}"
+                                            HorizontalAlignment="Stretch"
+                                            Background="#2196F3"
+                                            Foreground="White"
+                                            CornerRadius="8"
+                                            Height="36"
+                                            BorderThickness="0"/>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>

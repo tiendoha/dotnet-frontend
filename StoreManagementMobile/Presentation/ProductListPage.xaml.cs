@@ -199,5 +199,13 @@ private async void AddToCart_Click(object sender, RoutedEventArgs e)
     }
 }
 
+    // ----------------------------------------------------
+    // XỬ LÝ NÚT LỊCH SỬ ĐƠN HÀNG
+    // ----------------------------------------------------
+    private void HistoryButton_Click(object sender, RoutedEventArgs e)
+    {
+        // Điều hướng sang trang OrderHistoryPage
+        this.Frame.Navigate(typeof(OrderHistoryPage));
+    }
     }
 }
