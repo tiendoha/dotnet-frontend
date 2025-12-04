@@ -25,6 +25,11 @@ namespace StoreManagementMobile.Presentation
             var app = (App)Application.Current;
             _cartService = app.Host.Services.GetRequiredService<ICartService>();
 
+            this.NavigationCacheMode = NavigationCacheMode.Enabled;
+            // Thiết lập chế độ sắp xếp mặc định nếu SortOptions đã được đặt tên trong XAML 
+            // và chứa các RadioButton (Giữ lại logic ban đầu của người dùng)
+            // Tuy nhiên, việc này nên được đảm bảo trong XAML (SelectedItem) hoặc ViewModel.
+            // Nếu SortOptions.SelectedItem được set trong XAML, nó sẽ được áp dụng.
             if (SortOptions.SelectedItem is RadioButton initialRadioButton)
             {
                 ApplySortFromTag(initialRadioButton.Tag.ToString());
