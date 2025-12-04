@@ -10,28 +10,28 @@
     d:DataContext="{d:DesignInstance Type=local:ProductDetailViewModel}">
 
     <Grid RowDefinitions="Auto, *">
-       <RelativePanel Grid.Row="0" Margin="10, 10, 10, 0">
+       <RelativePanel Grid.Row="0" Margin="10, 10, 10, 10" Height="50">
 
-            <!-- Nút back phía trái -->
+            <!-- Nút back phía trái - Lớn hơn -->
             <Button x:Name="BackButton"
-            Content="&#xE72B;"
-            FontFamily="Segoe MDL2 Assets"
-            Click="BackButton_Click"
-            Width="40" Height="40"
-            Background="Red"
-            Foreground="White"
-            BorderThickness="0"
-            CornerRadius="20"
-            Padding="0"/>
+                    Content="&#xE72B;"
+                    FontFamily="Segoe MDL2 Assets"
+                    Click="BackButton_Click"
+                    Width="50" Height="50"
+                    Background="#FF4444"
+                    Foreground="White"
+                    BorderThickness="2"
+                    BorderBrush="#CC0000"
+                    CornerRadius="25"
+                    Padding="0"
+                    FontSize="20"/>
 
-
-            <!-- Text căn giữa tuyệt đối -->
+            <!-- Text căn giữa -->
             <TextBlock Text="Chi tiết Sản phẩm"
-                    FontSize="18"
-                    FontWeight="SemiBold"
-                    VerticalAlignment="Center"
-                    RelativePanel.AlignHorizontalCenterWithPanel="True"
-                    />
+                       FontSize="20"
+                       FontWeight="Bold"
+                       VerticalAlignment="Center"
+                       RelativePanel.AlignHorizontalCenterWithPanel="True"/>
 
         </RelativePanel>
 
@@ -105,15 +105,31 @@
 
                 <Rectangle Fill="#CCCCCC" Height="1" Margin="0, 10, 0, 10"/>
 
-                <Button x:Name="AddToCartBtn"
-                        Content="Thêm vào giỏ hàng"
-                        Command="{x:Bind ViewModel.AddToCartCommand}"
-                        Background="#0078D7"
-                        Foreground="White"
-                        CornerRadius="8"
-                        Height="56"
-                        FontSize="18"
-                        HorizontalAlignment="Stretch"/>
+                <!-- 2 nút: Thêm vào giỏ và Mua ngay -->
+                <Grid ColumnDefinitions="*, *" ColumnSpacing="12">
+                    <Button x:Name="AddToCartBtn"
+                            Grid.Column="0"
+                            Content="Thêm vào giỏ"
+                            Command="{x:Bind ViewModel.AddToCartCommand}"
+                            Background="#0078D7"
+                            Foreground="White"
+                            CornerRadius="8"
+                            Height="56"
+                            FontSize="16"
+                            HorizontalAlignment="Stretch"/>
+                    
+                    <Button x:Name="BuyNowBtn"
+                            Grid.Column="1"
+                            Content="Mua ngay"
+                            Click="BuyNowButton_Click"
+                            Background="#FF4444"
+                            Foreground="White"
+                            CornerRadius="8"
+                            Height="56"
+                            FontSize="16"
+                            FontWeight="Bold"
+                            HorizontalAlignment="Stretch"/>
+                </Grid>
             </StackPanel>
         </ScrollViewer>
     </Grid>

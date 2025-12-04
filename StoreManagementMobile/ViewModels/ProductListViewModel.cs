@@ -150,6 +150,7 @@ namespace StoreManagementMobile.Presentation
         cancellationToken.ThrowIfCancellationRequested();
 
         string url = BuildApiUrl();
+        Debug.WriteLine($"[API_CALL] SearchQuery='{SearchQuery}', SelectedCategoryId={SelectedCategoryId}");
         Debug.WriteLine($"[API_CALL] Loading products from: {url}");
 
         using var request = new HttpRequestMessage(HttpMethod.Get, url);

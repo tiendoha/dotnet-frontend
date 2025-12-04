@@ -1,7 +1,7 @@
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using StoreManagementMobile.Models;
-using StoreManagementMobile.Presentation; // Đảm bảo namespace này chứa ProductDetailViewModel
+using StoreManagementMobile.ViewModels;
 
 namespace StoreManagementMobile.Presentation
 {
@@ -51,6 +51,42 @@ namespace StoreManagementMobile.Presentation
             if (this.Frame.CanGoBack)
             {
                 this.Frame.GoBack();
+            }
+        }
+        
+        // 🔥 MỚI: Xử lý nút Mua ngay - KHÔNG lưu vào giỏ hàng
+        private void BuyNowButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            try
+            {
+                // KHÔNG thêm vào SQLite - chỉ truyền thông tin sang CheckoutPage
+                var checkoutData = new CheckoutNavigationData
+                {
+                    Subtotal = ViewModel.ProductPrice * ViewModel.Quantity,
+                    Discount = 0,
+                    Total = ViewModel.ProductPrice * ViewModel.Quantity,
+                    AppliedPromoId = null,
+                    IsFromBuyNow = true, // Đánh dấu là "Mua ngay"
+                    
+                    // Truyền thêm thông tin sản phẩm để tạo đơn hàng
+                    BuyNowProduct = new CartItem
+                    {
+                        ProductId = ViewModel.ProductId,
+                        ProductName = ViewModel.ProductName,
+                        Price = ViewModel.ProductPrice,
+                        Quantity = ViewModel.Quantity,
+                        ImagePath = ViewModel.ProductImageUrl
+                    }
+                };
+                
+                System.Diagnostics.Debug.WriteLine($"🛒 Mua ngay: {ViewModel.ProductName} x{ViewModel.Quantity}");
+                
+                // Điều hướng trực tiếp sang CheckoutPage
+                this.Frame.Navigate(typeof(CheckoutPage), checkoutData);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"💥 Lỗi Mua ngay: {ex}");
             }
         }
     }

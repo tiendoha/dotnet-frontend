@@ -13,9 +13,13 @@ public partial class CartListViewModel : ObservableObject
 {
     private readonly ICartService _cartService;
     private readonly IStoreApi _api;
+    private bool _promotionsLoaded = false; // Cache flag
 
     public ObservableCollection<CartItem> Items { get; set; } = new();
     public ObservableCollection<SelectablePromotion> PromoList { get; set; } = new();
+    
+    [ObservableProperty]
+    private bool isLoading;
 
     // ================= MONEY =================
     [ObservableProperty]
@@ -42,7 +46,7 @@ public partial class CartListViewModel : ObservableObject
     [ObservableProperty]
     private SelectablePromotion? selectedPromo;
 
-    partial void OnSelectedPromoChanged(SelectablePromotion value)
+    partial void OnSelectedPromoChanged(SelectablePromotion? value)
     {
         // ❌ Không áp dụng mã ngay
         // ❌ Không tính giảm giá ở đây
@@ -75,9 +79,28 @@ public partial class CartListViewModel : ObservableObject
 
     public async Task LoadPromotions()
     {
+        Debug.WriteLine("🔹 LoadPromotions() bắt đầu...");
+        
+        // Chỉ load 1 lần (cache)
+        if (_promotionsLoaded && PromoList.Count > 0)
+        {
+            Debug.WriteLine("💾 Dùng cache - Không gọi API");
+            // Cập nhật IsEnabled dựa trên Subtotal hiện tại
+            foreach (var item in PromoList.Skip(1)) // Skip "Không áp dụng mã"
+            {
+                if (item.Promo != null)
+                {
+                    item.IsEnabled = Subtotal >= item.Promo.MinOrderAmount;
+                }
+            }
+            return;
+        }
+        
         try
         {
+            Debug.WriteLine("🌐 Gọi API: GET /api/Promotion");
             var response = await _api.GetPromotions();
+            Debug.WriteLine($"✅ Nhận được {response?.Data?.Items?.Count ?? 0} khuyến mãi");
             PromoList.Clear();
 
             // Add "Không áp dụng mã"
@@ -95,10 +118,14 @@ public partial class CartListViewModel : ObservableObject
                     IsEnabled = Subtotal >= p.MinOrderAmount
                 });
             }
+            
+            _promotionsLoaded = true;
         }
         catch (Exception ex)
         {
             Debug.WriteLine("💥 LoadPromotions error: " + ex);
+            var innerMsg = ex.InnerException?.Message ?? ex.Message;
+            Debug.WriteLine($"   Chi tiết: {innerMsg}");
             PromoList.Clear();
         }
     }
@@ -108,29 +135,36 @@ public partial class CartListViewModel : ObservableObject
     [RelayCommand]
     public async Task IncreaseQuantity(CartItem item)
     {
+        IsLoading = true;
         await _cartService.UpdateQuantityAsync(item.ProductId, item.Quantity + 1);
         await LoadItems();
-        await LoadPromotions();
+        // Chỉ cập nhật IsEnabled, không reload API
+        UpdatePromotionStates();
+        IsLoading = false;
     }
 
     [RelayCommand]
     public async Task DecreaseQuantity(CartItem item)
     {
+        IsLoading = true;
         if (item.Quantity > 1)
             await _cartService.UpdateQuantityAsync(item.ProductId, item.Quantity - 1);
         else
             await _cartService.RemoveItemAsync(item.ProductId);
 
         await LoadItems();
-        await LoadPromotions();
+        UpdatePromotionStates();
+        IsLoading = false;
     }
 
     [RelayCommand]
     public async Task RemoveItem(CartItem item)
     {
+        IsLoading = true;
         await _cartService.RemoveItemAsync(item.ProductId);
         await LoadItems();
-        await LoadPromotions();
+        UpdatePromotionStates();
+        IsLoading = false;
     }
 
     [RelayCommand]
@@ -138,26 +172,44 @@ public partial class CartListViewModel : ObservableObject
     {
         if (item.Quantity <= 0) item.Quantity = 1;
 
+        IsLoading = true;
         await _cartService.UpdateQuantityAsync(item.ProductId, item.Quantity);
         await LoadItems();
-        await LoadPromotions();
+        UpdatePromotionStates();
+        IsLoading = false;
+    }
+    
+    private void UpdatePromotionStates()
+    {
+        foreach (var item in PromoList.Skip(1))
+        {
+            if (item.Promo != null)
+            {
+                item.IsEnabled = Subtotal >= item.Promo.MinOrderAmount;
+            }
+        }
     }
 
     // ================= APPLY PROMO =================
     [RelayCommand]
     public async Task ApplyPromo()
     {
+        Debug.WriteLine("🔹 ApplyPromo() bắt đầu...");
+        
         if (SelectedPromo == null || SelectedPromo.Promo?.PromoCode == "Không áp dụng mã")
         {
+            Debug.WriteLine("❌ Không có mã được chọn");
             Discount = 0;
             return;
         }
 
         string code = SelectedPromo.Promo.PromoCode;
+        Debug.WriteLine($"🌐 Gọi API: GET /api/Promotion/by-code/{code}");
 
         try
         {
             var response = await _api.GetPromotionByCode(code);
+            Debug.WriteLine($"✅ API response: Success={response?.Success}, Data={response?.Data?.PromoCode}");
 
             if (!response.Success || response.Data == null)
             {
@@ -183,6 +235,8 @@ public partial class CartListViewModel : ObservableObject
         catch (Exception ex)
         {
             Debug.WriteLine("💥 ApplyPromo error: " + ex);
+            var innerMsg = ex.InnerException?.Message ?? ex.Message;
+            Debug.WriteLine($"   Chi tiết: {innerMsg}");
             Discount = 0;
         }
     }

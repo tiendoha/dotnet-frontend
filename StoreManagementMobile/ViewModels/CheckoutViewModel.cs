@@ -16,6 +16,7 @@ public partial class CheckoutViewModel : ObservableObject
 {
     private readonly ICartService _cartService;
     private readonly IStoreApi _api;
+    private readonly IOrderHistoryService _orderHistoryService;
 
     // Navigation data
     public CheckoutNavigationData NavigationData { get; private set; } = new();
@@ -49,10 +50,11 @@ public partial class CheckoutViewModel : ObservableObject
     [ObservableProperty] private bool isBusy;
     [ObservableProperty] private string statusMessage = "";
 
-    public CheckoutViewModel(ICartService cartService, IStoreApi api)
+    public CheckoutViewModel(ICartService cartService, IStoreApi api, IOrderHistoryService orderHistoryService)
     {
         _cartService = cartService;
         _api = api;
+        _orderHistoryService = orderHistoryService;
     }
 
     // ============================================================
@@ -167,19 +169,41 @@ public partial class CheckoutViewModel : ObservableObject
 
         try
         {
-            var cartItems = await _cartService.GetItemsAsync();
-            if (!cartItems.Any())
+            List<Models.OrderItemDto> details;
+            
+            // Nếu là "Mua ngay" - dùng sản phẩm từ NavigationData
+            if (NavigationData.IsFromBuyNow && NavigationData.BuyNowProduct != null)
             {
-                StatusMessage = "Giỏ hàng trống.";
-                return;
+                var product = NavigationData.BuyNowProduct;
+                details = new List<Models.OrderItemDto>
+                {
+                    new Models.OrderItemDto
+                    {
+                        ProductId = product.ProductId,
+                        Quantity = product.Quantity,
+                        Price = product.Price * product.Quantity
+                    }
+                };
+                Debug.WriteLine($"🛒 Đặt hàng 'Mua ngay': {product.ProductName} x{product.Quantity}");
             }
-
-            var details = cartItems.Select(c => new Models.OrderItemDto
+            else
             {
-                ProductId = c.ProductId,
-                Quantity = c.Quantity,
-                Price = c.Price * c.Quantity  // ⭐ BẮT BUỘC
-            }).ToList();
+                // Nếu là thanh toán bình thường - lấy từ giỏ hàng SQLite
+                var cartItems = await _cartService.GetItemsAsync();
+                if (!cartItems.Any())
+                {
+                    StatusMessage = "Giỏ hàng trống.";
+                    return;
+                }
+
+                details = cartItems.Select(c => new Models.OrderItemDto
+                {
+                    ProductId = c.ProductId,
+                    Quantity = c.Quantity,
+                    Price = c.Price * c.Quantity
+                }).ToList();
+                Debug.WriteLine($"🛍️ Đặt hàng từ giỏ: {details.Count} sản phẩm");
+            }
 
 
             var request = new Models.CreateOrderRequest
@@ -196,18 +220,68 @@ public partial class CheckoutViewModel : ObservableObject
             };
 
             Debug.WriteLine("📦 Sending Order:");
+            Debug.WriteLine($"   📋 OrderDetails count: {request.OrderDetails.Count}");
+            foreach (var item in request.OrderDetails)
+            {
+                Debug.WriteLine($"      - ProductId={item.ProductId}, Qty={item.Quantity}, Price={item.Price}");
+            }
             Debug.WriteLine(System.Text.Json.JsonSerializer.Serialize(request, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
 
+            Debug.WriteLine("🌐 Gọi API: POST /api/orders");
             var apiResult = await _api.CreateOrder(request);
+            Debug.WriteLine($"✅ API response: Success={apiResult?.Success}, Message={apiResult?.Message}");
+            
+            if (apiResult?.Data != null)
+            {
+                Debug.WriteLine($"   📄 OrderId returned: {apiResult.Data.OrderId}");
+            }
+            if (apiResult?.Errors != null && apiResult.Errors.Any())
+            {
+                Debug.WriteLine($"   ❌ Errors: {string.Join(", ", apiResult.Errors)}");
+            }
 
             if (apiResult.Success)
             {
-                await _cartService.ClearAsync();
+                // 1️⃣ Lưu vào SQLite OrderHistory
+                var orderHistory = new OrderHistory
+                {
+                    OrderId = apiResult.Data?.OrderId ?? 0,
+                    OrderDate = DateTime.Now,
+                    CustomerName = CustomerName,
+                    CustomerPhone = CustomerPhone,
+                    CustomerAddress = CustomerAddress,
+                    TotalAmount = Subtotal,
+                    DiscountAmount = Discount,
+                    FinalAmount = Total,
+                    PaymentMethod = PaymentMethod,
+                    Status = "Completed",
+                    OrderDetailsJson = System.Text.Json.JsonSerializer.Serialize(details)
+                };
+                
+                await _orderHistoryService.AddOrderAsync(orderHistory);
+                Debug.WriteLine($"💾 Đã lưu OrderHistory vào SQLite: OrderId={orderHistory.OrderId}");
+                
+                // 2️⃣ Chỉ clear giỏ hàng nếu KHÔNG phải "Mua ngay"
+                if (!NavigationData.IsFromBuyNow)
+                {
+                    await _cartService.ClearAsync();
+                    Debug.WriteLine("✅ Đã xoá giỏ hàng");
+                }
+                else
+                {
+                    Debug.WriteLine("✅ 'Mua ngay' - Giữ nguyên giỏ hàng");
+                }
 
-                await ShowSuccessDialog();
-
+                // 3️⃣ Chuyển sang trang OrderSuccessPage
+                var successData = new StoreManagementMobile.Presentation.OrderSuccessData
+                {
+                    Total = Total,
+                    CustomerName = CustomerName,
+                    CustomerPhone = CustomerPhone
+                };
+                
                 var window = Window.Current;
-                (window.Content as Frame)?.Navigate(typeof(StoreManagementMobile.Presentation.MainPage));
+                (window.Content as Frame)?.Navigate(typeof(StoreManagementMobile.Presentation.OrderSuccessPage), successData);
                 return;
             }
 
@@ -216,8 +290,10 @@ public partial class CheckoutViewModel : ObservableObject
         }
         catch (System.Exception ex)
         {
-            StatusMessage = "Lỗi kết nối.";
-            Debug.WriteLine("💥 Exception: " + ex);
+            var innerMsg = ex.InnerException?.Message ?? ex.Message;
+            StatusMessage = $"❌ Lỗi kết nối: {innerMsg}";
+            Debug.WriteLine("💥 PlaceOrder Exception: " + ex);
+            Debug.WriteLine($"   Chi tiết: {innerMsg}");
         }
         finally
         {
@@ -230,10 +306,16 @@ public partial class CheckoutViewModel : ObservableObject
     // ============================================================
     private async Task ShowSuccessDialog()
     {
+        var successMessage = $"✅ Đơn hàng đã được tạo thành công!\n\n" +
+                           $"💰 Tổng tiền: {Total:N0} đ\n" +
+                           $"📍 Giao tới: {CustomerName}\n" +
+                           $"📞 Liên hệ: {CustomerPhone}\n\n" +
+                           $"Cảm ơn bạn đã mua hàng! 🙏";
+        
         var dialog = new ContentDialog
         {
             Title = "🎉 Đặt hàng thành công!",
-            Content = "Cảm ơn bạn đã mua hàng.",
+            Content = successMessage,
             CloseButtonText = "OK",
             XamlRoot = (Window.Current.Content as FrameworkElement)?.XamlRoot
         };
