@@ -19,7 +19,7 @@ namespace StoreManagementMobile.Presentation
         {
             this.InitializeComponent();
             this.DataContext = ViewModel;
-
+            this.NavigationCacheMode = NavigationCacheMode.Enabled;
             // Thiết lập chế độ sắp xếp mặc định nếu SortOptions đã được đặt tên trong XAML 
             // và chứa các RadioButton (Giữ lại logic ban đầu của người dùng)
             // Tuy nhiên, việc này nên được đảm bảo trong XAML (SelectedItem) hoặc ViewModel.
