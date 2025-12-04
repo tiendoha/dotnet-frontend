@@ -25,7 +25,7 @@ public class AppDbContext : DbContext
             Directory.CreateDirectory(folder!);
     }
 
-    // 🔥 Lấy đúng đường dẫn SQLite cho từng platform
+    // 🔥 Lấy đúng đường dẫn SQLite cho từng platformmm
     private string GetDatabasePath()
     {
         var fileName = "store_local.db3";
