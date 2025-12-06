@@ -180,6 +180,7 @@ public partial class CheckoutViewModel : ObservableObject
                     new Models.OrderItemDto
                     {
                         ProductId = product.ProductId,
+                        ProductName = product.ProductName, 
                         Quantity = product.Quantity,
                         Price = product.Price * product.Quantity
                     }
@@ -199,6 +200,7 @@ public partial class CheckoutViewModel : ObservableObject
                 details = cartItems.Select(c => new Models.OrderItemDto
                 {
                     ProductId = c.ProductId,
+                    ProductName = c.ProductName, // ⭐ Thêm ProductName
                     Quantity = c.Quantity,
                     Price = c.Price * c.Quantity
                 }).ToList();

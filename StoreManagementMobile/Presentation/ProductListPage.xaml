@@ -32,10 +32,11 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- SEARCH + FILTER + HISTORY + CART -->
-        <Grid Grid.Row="0" ColumnSpacing="12" Margin="0,0,0,16">
+        <!-- SEARCH + FILTER + HISTORY + CART + LOGIN -->
+        <Grid Grid.Row="0" ColumnSpacing="8" Margin="0,0,0,16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
@@ -55,7 +56,7 @@
             <Button x:Name="btnFilter"
                     Grid.Column="1"
                     Height="40"
-                    Width="40"
+                    Width="44"
                     CornerRadius="8"
                     Padding="0"
                     Background="#8BC34A">
@@ -93,30 +94,39 @@
             <Button x:Name="btnHistory"
                     Grid.Column="2"
                     Height="40"
-                    Width="50"
+                    Width="44"
                     CornerRadius="8"
                     Padding="0"
                     Background="#FF9800"
-                    BorderBrush="#F57C00"
-                    BorderThickness="2"
                     Click="HistoryButton_Click"
                     ToolTipService.ToolTip="Lịch sử đơn hàng">
-                <FontIcon Glyph="&#xE81C;" FontSize="22" Foreground="White"/>
+                <FontIcon Glyph="&#xE81C;" FontSize="20" Foreground="White"/>
+            </Button>
+
+            <!-- LOGIN/LOGOUT BUTTON -->
+            <Button x:Name="btnAuth"
+                    Grid.Column="3"
+                    Height="40"
+                    Width="44"
+                    CornerRadius="8"
+                    Padding="0"
+                    Background="#2196F3"
+                    Click="AuthButton_Click"
+                    ToolTipService.ToolTip="Đăng nhập/Đăng xuất">
+                <FontIcon x:Name="iconAuth" Glyph="&#xE77B;" FontSize="20" Foreground="White"/>
             </Button>
 
             <!-- CART BUTTON -->
             <Button x:Name="btnCart"
-                    Grid.Column="3"
+                    Grid.Column="4"
                     Height="40"
-                    Width="50"
+                    Width="44"
                     CornerRadius="8"
                     Padding="0"
                     Background="#FF4444"
-                    BorderBrush="#CC0000"
-                    BorderThickness="2"
                     Click="CartButton_Click">
                 <FontIcon Glyph="&#xE7BF;"
-                         FontSize="22"
+                         FontSize="20"
                          Foreground="White"/>
             </Button>
         </Grid>

@@ -40,12 +40,36 @@ namespace StoreManagementMobile.Presentation
         {
             base.OnNavigatedTo(e);
             
+            // Cập nhật icon Auth dựa vào trạng thái login
+            UpdateAuthButton();
+            
             // Đảm bảo tất cả các thao tác load dữ liệu ban đầu được chạy
             await ViewModel.LoadProductsAsync();
             await ViewModel.LoadCategoriesAsync();
             // Việc RefreshProducts có thể không cần thiết nếu LoadProductsAsync đã tải lần đầu
             // Nhưng giữ lại theo yêu cầu của code gốc
             await ViewModel.RefreshProducts(); 
+        }
+
+        private void UpdateAuthButton()
+        {
+            // Kiểm tra đã login chưa
+            bool isLoggedIn = !string.IsNullOrEmpty(App.UserToken);
+            
+            if (isLoggedIn)
+            {
+                // Đã login - đổi thành nút Logout
+                iconAuth.Glyph = "\uE7E8"; // Logout icon
+                btnAuth.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.OrangeRed);
+                Microsoft.UI.Xaml.Controls.ToolTipService.SetToolTip(btnAuth, "Đăng xuất");
+            }
+            else
+            {
+                // Chưa login - giữ nút Login
+                iconAuth.Glyph = "\uE77B"; // User icon
+                btnAuth.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.DodgerBlue);
+                Microsoft.UI.Xaml.Controls.ToolTipService.SetToolTip(btnAuth, "Đăng nhập");
+            }
         }
 
         // -------------------------------
@@ -211,6 +235,42 @@ private async void AddToCart_Click(object sender, RoutedEventArgs e)
     {
         // Điều hướng sang trang OrderHistoryPage
         this.Frame.Navigate(typeof(OrderHistoryPage));
+    }
+
+    // ----------------------------------------------------
+    // XỬ LÝ NÚT AUTH (LOGIN/LOGOUT)
+    // ----------------------------------------------------
+    private void AuthButton_Click(object sender, RoutedEventArgs e)
+    {
+        bool isLoggedIn = !string.IsNullOrEmpty(App.UserToken);
+        
+        if (isLoggedIn)
+        {
+            // Đã login - thực hiện logout
+            App.UserToken = "";
+            App.UserId = 0;
+            UpdateAuthButton();
+            
+            // Hiển thị thông báo
+            var _ = ShowLogoutMessage();
+        }
+        else
+        {
+            // Chưa login - điều hướng sang LoginPage
+            this.Frame.Navigate(typeof(LoginPage));
+        }
+    }
+
+    private async Task ShowLogoutMessage()
+    {
+        var dialog = new ContentDialog
+        {
+            Title = "Đăng xuất",
+            Content = "Đã đăng xuất thành công!",
+            CloseButtonText = "OK",
+            XamlRoot = this.XamlRoot
+        };
+        await dialog.ShowAsync();
     }
     }
 }

@@ -1,12 +1,13 @@
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace StoreManagementMobile.Models
 {
     public class OrderItemDto
     {
         public int ProductId { get; set; }
+        public string ProductName { get; set; } = string.Empty;
         public int Quantity { get; set; }
-        // ⭐ BẮT BUỘC CÓ
         public decimal Price { get; set; }
     }
 

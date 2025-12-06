@@ -1,5 +1,6 @@
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.Extensions.DependencyInjection; // Cần để lấy Service
+using Microsoft.Extensions.DependencyInjection;
 using StoreManagementMobile.ViewModels;
 
 namespace StoreManagementMobile.Presentation;
@@ -25,4 +26,10 @@ public sealed partial class LoginPage : Page
     }
 
     public LoginViewModel ViewModel { get; }
+
+    // Xử lý nút Back
+    private void BackButton_Click(object sender, RoutedEventArgs e)
+    {
+        Frame.Navigate(typeof(ProductListPage));
+    }
 }

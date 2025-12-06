@@ -73,13 +73,48 @@ public sealed partial class OrderHistoryPage : Page
             
             if (order != null)
             {
-                var detailsText = $"Đơn hàng #{order.OrderId}\n\n" +
-                                $"Ngày: {order.OrderDateText}\n" +
-                                $"Khách hàng: {order.CustomerName}\n" +
-                                $"SĐT: {order.CustomerPhone}\n" +
-                                $"Địa chỉ: {order.CustomerAddress}\n\n";
+                // Tạo giao diện đẹp hơn với StackPanel
+                var contentPanel = new StackPanel { Spacing = 16, Padding = new Thickness(8) };
 
-                // Parse OrderDetailsJson để hiển thị danh sách sản phẩm
+                // Header - Mã đơn hàng
+                var headerPanel = new StackPanel 
+                { 
+                    Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.LightBlue),
+                    Padding = new Thickness(12),
+                    CornerRadius = new CornerRadius(8)
+                };
+                headerPanel.Children.Add(new TextBlock 
+                { 
+                    Text = $"Đơn hàng #{order.OrderId}",
+                    FontSize = 20,
+                    FontWeight = Microsoft.UI.Text.FontWeights.Bold
+                });
+                headerPanel.Children.Add(new TextBlock 
+                { 
+                    Text = order.OrderDateText,
+                    FontSize = 14,
+                    Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.DarkSlateGray)
+                });
+                contentPanel.Children.Add(headerPanel);
+
+                // Thông tin khách hàng
+                var customerPanel = new StackPanel { Spacing = 8 };
+                customerPanel.Children.Add(new TextBlock 
+                { 
+                    Text = "Thông tin khách hàng",
+                    FontSize = 16,
+                    FontWeight = Microsoft.UI.Text.FontWeights.SemiBold
+                });
+                customerPanel.Children.Add(new TextBlock { Text = $"👤 {order.CustomerName}" });
+                customerPanel.Children.Add(new TextBlock { Text = $"📞 {order.CustomerPhone}" });
+                customerPanel.Children.Add(new TextBlock 
+                { 
+                    Text = $"📍 {order.CustomerAddress}",
+                    TextWrapping = TextWrapping.Wrap
+                });
+                contentPanel.Children.Add(customerPanel);
+
+                // Danh sách sản phẩm
                 if (!string.IsNullOrEmpty(order.OrderDetailsJson))
                 {
                     try
@@ -87,13 +122,44 @@ public sealed partial class OrderHistoryPage : Page
                         var products = JsonSerializer.Deserialize<List<OrderProductDetail>>(order.OrderDetailsJson);
                         if (products != null && products.Any())
                         {
-                            detailsText += "Sản phẩm:\n";
+                            var productsPanel = new StackPanel { Spacing = 8 };
+                            productsPanel.Children.Add(new TextBlock 
+                            { 
+                                Text = "Sản phẩm đã mua",
+                                FontSize = 16,
+                                FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+                                Margin = new Thickness(0, 8, 0, 0)
+                            });
+
                             foreach (var product in products)
                             {
-                                detailsText += $"• {product.ProductName}\n";
-                                detailsText += $"  Số lượng: {product.Quantity} x {product.Price:N0} đ = {product.Quantity * product.Price:N0} đ\n";
+                                var productBorder = new Border
+                                {
+                                    Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.WhiteSmoke),
+                                    Padding = new Thickness(12),
+                                    CornerRadius = new CornerRadius(6),
+                                    Margin = new Thickness(0, 4, 0, 4)
+                                };
+
+                                var productStack = new StackPanel { Spacing = 4 };
+                                productStack.Children.Add(new TextBlock 
+                                { 
+                                    Text = product.ProductName,
+                                    FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+                                    FontSize = 14
+                                });
+                                productStack.Children.Add(new TextBlock 
+                                { 
+                                    Text = $"Số lượng: {product.Quantity} x {product.Price:N0} đ = {product.Quantity * product.Price:N0} đ",
+                                    FontSize = 13,
+                                    Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.DarkGreen)
+                                });
+
+                                productBorder.Child = productStack;
+                                productsPanel.Children.Add(productBorder);
                             }
-                            detailsText += "\n";
+
+                            contentPanel.Children.Add(productsPanel);
                         }
                     }
                     catch (System.Exception ex)
@@ -102,23 +168,43 @@ public sealed partial class OrderHistoryPage : Page
                     }
                 }
 
-                detailsText += $"Tạm tính: {order.TotalAmount:N0} đ\n" +
-                              $"Giảm giá: -{order.DiscountAmount:N0} đ\n" +
-                              $"Tổng cộng: {order.FinalAmount:N0} đ\n\n" +
-                              $"Thanh toán: {order.PaymentMethod}\n" +
-                              $"Trạng thái: {order.Status}";
-                
+                // Tổng tiền
+                var summaryPanel = new StackPanel 
+                { 
+                    Spacing = 4,
+                    Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.LightYellow),
+                    Padding = new Thickness(12),
+                    CornerRadius = new CornerRadius(8),
+                    Margin = new Thickness(0, 8, 0, 0)
+                };
+                summaryPanel.Children.Add(new TextBlock { Text = $"Tạm tính: {order.TotalAmount:N0} đ" });
+                summaryPanel.Children.Add(new TextBlock 
+                { 
+                    Text = $"Giảm giá: -{order.DiscountAmount:N0} đ",
+                    Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Red)
+                });
+                summaryPanel.Children.Add(new TextBlock 
+                { 
+                    Text = $"Tổng cộng: {order.FinalAmount:N0} đ",
+                    FontSize = 18,
+                    FontWeight = Microsoft.UI.Text.FontWeights.Bold,
+                    Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Green)
+                });
+                summaryPanel.Children.Add(new TextBlock 
+                { 
+                    Text = $"Thanh toán: {order.PaymentMethod}",
+                    Margin = new Thickness(0, 8, 0, 0)
+                });
+                summaryPanel.Children.Add(new TextBlock { Text = $"Trạng thái: {order.Status}" });
+                contentPanel.Children.Add(summaryPanel);
+
                 var dialog = new ContentDialog
                 {
                     Title = "Chi tiết đơn hàng",
                     Content = new ScrollViewer
                     {
-                        Content = new TextBlock
-                        {
-                            Text = detailsText,
-                            TextWrapping = TextWrapping.Wrap
-                        },
-                        MaxHeight = 400
+                        Content = contentPanel,
+                        MaxHeight = 500
                     },
                     CloseButtonText = "Đóng",
                     XamlRoot = this.XamlRoot
