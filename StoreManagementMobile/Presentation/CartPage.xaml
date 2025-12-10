@@ -51,7 +51,7 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
 
-                            <Border Background="White" Padding="12" CornerRadius="12" Margin="0,0,0,10" 
+                            <Border Background="White" Padding="12" CornerRadius="12" Margin="0,0,0,10"
                                     BorderBrush="#E0E0E0" BorderThickness="1">
                                 <Grid RowSpacing="8">
                                     <Grid.RowDefinitions>
@@ -74,13 +74,13 @@
 
                                         <!-- NAME + PRICE -->
                                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
-                                            <TextBlock Text="{Binding ProductName}" 
-                                                       FontSize="16" 
+                                            <TextBlock Text="{Binding ProductName}"
+                                                       FontSize="16"
                                                        FontWeight="SemiBold"
                                                        TextWrapping="Wrap"
                                                        MaxLines="2"/>
-                                            <TextBlock Text="{Binding PriceText}" 
-                                                       Foreground="#FF4444" 
+                                            <TextBlock Text="{Binding PriceText}"
+                                                       Foreground="#FF4444"
                                                        FontSize="15"
                                                        FontWeight="Bold"/>
                                         </StackPanel>
@@ -93,7 +93,7 @@
                                                 Padding="0"
                                                 Command="{Binding DataContext.RemoveItemCommand, ElementName=RootPage}"
                                                 CommandParameter="{Binding}">
-                                            <FontIcon Glyph="&#xE74D;" 
+                                            <FontIcon Glyph="&#xE74D;"
                                                      FontSize="18"
                                                      Foreground="White"/>
                                         </Button>
@@ -102,11 +102,11 @@
                                     <!-- ROW 2: QUANTITY CONTROLS -->
                                     <Grid Grid.Row="1" HorizontalAlignment="Right">
                                         <StackPanel Orientation="Horizontal" Spacing="8">
-                                            <TextBlock Text="Số lượng:" 
+                                            <TextBlock Text="Số lượng:"
                                                        VerticalAlignment="Center"
                                                        FontSize="14"
                                                        Foreground="Gray"/>
-                                            
+
                                             <!-- MINUS -->
                                             <Button Width="32" Height="32"
                                                     Background="#E0E0E0"
@@ -114,8 +114,8 @@
                                                     Padding="0"
                                                     Command="{Binding DataContext.DecreaseQuantityCommand, ElementName=RootPage}"
                                                     CommandParameter="{Binding}">
-                                                <TextBlock Text="−" 
-                                                          FontSize="18" 
+                                                <TextBlock Text="−"
+                                                          FontSize="18"
                                                           FontWeight="Bold"
                                                           Foreground="#333"/>
                                             </Button>
@@ -134,8 +134,8 @@
                                                     Padding="0"
                                                     Command="{Binding DataContext.IncreaseQuantityCommand, ElementName=RootPage}"
                                                     CommandParameter="{Binding}">
-                                                <TextBlock Text="+" 
-                                                          FontSize="18" 
+                                                <TextBlock Text="+"
+                                                          FontSize="18"
                                                           FontWeight="Bold"
                                                           Foreground="White"/>
                                             </Button>
@@ -164,7 +164,8 @@
 
                 <ComboBox ItemsSource="{Binding PromoList}"
                           SelectedItem="{Binding SelectedPromo, Mode=TwoWay}"
-                          MaxDropDownHeight="200">
+                          MaxDropDownHeight="200"
+                          HorizontalAlignment="Stretch">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding DisplayText}"
@@ -179,27 +180,30 @@
                         Foreground="White"
                         CornerRadius="6"
                         Height="40"
+                        HorizontalAlignment="Right"
                         Command="{Binding ApplyPromoCommand}" />
 
+
                 <!-- SUMMARY -->
-                <Border Background="#F5F5F5" 
-                        CornerRadius="8" 
+                <Border Background="#F5F5F5"
+                        CornerRadius="8"
                         Padding="12"
                         Margin="0,5,0,0">
                     <StackPanel Spacing="6">
                         <Grid>
                             <TextBlock Text="Tạm tính:" FontSize="14"/>
-                            <TextBlock Text="{Binding SubtotalText}" 
-                                       FontSize="16" 
+                            <TextBlock Text="{Binding SubtotalText}"
+                                       FontSize="16"
                                        FontWeight="SemiBold"
+                                       Foreground="#FF4444"
                                        HorizontalAlignment="Right"/>
                         </Grid>
 
                         <Grid>
                             <TextBlock Text="Giảm giá:" FontSize="14"/>
-                            <TextBlock Text="{Binding DiscountText}" 
-                                       FontSize="16" 
-                                       Foreground="#008F5A"
+                            <TextBlock Text="{Binding DiscountText}"
+                                       FontSize="16"
+                                       Foreground="#FF4444"
                                        FontWeight="SemiBold"
                                        HorizontalAlignment="Right"/>
                         </Grid>
@@ -207,13 +211,13 @@
                         <Rectangle Fill="#CCCCCC" Height="1" Margin="0,4"/>
 
                         <Grid>
-                            <TextBlock Text="Tổng cộng:" 
+                            <TextBlock Text="Tổng cộng:"
                                        FontSize="16"
                                        FontWeight="Bold"/>
-                            <TextBlock Text="{Binding TotalText}" 
-                                       FontSize="20" 
+                            <TextBlock Text="{Binding TotalText}"
+                                       FontSize="20"
                                        FontWeight="Bold"
-                                       Foreground="#008F5A"
+                                       Foreground="#FF4444"
                                        HorizontalAlignment="Right"/>
                         </Grid>
                     </StackPanel>
@@ -234,7 +238,10 @@
                 FontSize="18"
                 FontWeight="Bold"
                 Margin="0,5,0,10"
-                Command="{Binding ContinuePaymentCommand}" />
+                HorizontalAlignment="Stretch"
+                Width="Auto"
+                Command="{Binding ContinuePaymentCommand}"/>
+
 
     </Grid>
 </Page>
