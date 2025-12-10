@@ -14,6 +14,7 @@
 
             <!-- Nút back phía trái -->
             <Button x:Name="BackButton"
+<<<<<<< Updated upstream
             Content="&#xE72B;"
             FontFamily="Segoe MDL2 Assets"
             Click="BackButton_Click"
@@ -23,6 +24,19 @@
             BorderThickness="0"
             CornerRadius="20"
             Padding="0"/>
+=======
+                    Content="&#xE72B;"
+                    FontFamily="Segoe MDL2 Assets"
+                    Click="BackButton_Click"
+                    Width="50" Height="50"
+                    Background="#008F5A"
+                    Foreground="White"
+                    BorderThickness="2"
+                    BorderBrush="#CC0000"
+                    CornerRadius="25"
+                    Padding="0"
+                    FontSize="20"/>
+>>>>>>> Stashed changes
 
 
             <!-- Text căn giữa tuyệt đối -->
@@ -40,7 +54,7 @@
             <StackPanel Spacing="24">
 
                 <Border CornerRadius="12" Background="#F0F0F0" Height="300" HorizontalAlignment="Stretch">
-                    <Image Source="{x:Bind ViewModel.ProductImageUrl, Mode=OneWay}" 
+                    <Image Source="{x:Bind ViewModel.ProductImageUrl, Mode=OneWay}"
                         Stretch="UniformToFill"
                         VerticalAlignment="Center"
                         HorizontalAlignment="Center"/>
@@ -55,7 +69,7 @@
 
                 <TextBlock x:Name="ProductPriceControl"
                         Text="{x:Bind ViewModel.ProductPriceFormatted, Mode=OneWay}"
-                        Foreground="#0078D7" 
+                        Foreground="#008F5A"
                         FontSize="24"
                         FontWeight="ExtraBold"/>
 
@@ -69,7 +83,7 @@
                         <TextBlock Text="Đơn vị:" FontWeight="SemiBold" Width="80"/>
                         <TextBlock Text="{x:Bind ViewModel.ProductUnit, Mode=OneWay}"/>
                     </StackPanel>
-                    
+
                     <StackPanel Orientation="Horizontal" Spacing="12">
                         <TextBlock Text="Loại SP:" FontWeight="SemiBold" Width="80"/>
                         <TextBlock Text="{x:Bind ViewModel.ProductCategoryName, Mode=OneWay}"/>
@@ -86,7 +100,8 @@
                             Content="−"
                             Width="56" Height="56"
                             FontSize="24"
-                            CornerRadius="28"/>
+                            CornerRadius="28"
+                            Background="#008F5A"/>
 
                     <TextBlock Text="{x:Bind ViewModel.Quantity, Mode=OneWay}"
                             VerticalAlignment="Center"
@@ -100,11 +115,13 @@
                             Content="+"
                             Width="56" Height="56"
                             FontSize="24"
-                            CornerRadius="28"/>
+                            CornerRadius="28"
+                            Background="#008F5A"/>
                 </StackPanel>
 
                 <Rectangle Fill="#CCCCCC" Height="1" Margin="0, 10, 0, 10"/>
 
+<<<<<<< Updated upstream
                 <Button x:Name="AddToCartBtn"
                         Content="Thêm vào giỏ hàng"
                         Command="{x:Bind ViewModel.AddToCartCommand}"
@@ -114,6 +131,33 @@
                         Height="56"
                         FontSize="18"
                         HorizontalAlignment="Stretch"/>
+=======
+                <!-- 2 nút: Thêm vào giỏ và Mua ngay -->
+                <Grid ColumnDefinitions="*, *" ColumnSpacing="12">
+                    <Button x:Name="AddToCartBtn"
+                            Grid.Column="0"
+                            Content="Thêm vào giỏ"
+                            Command="{x:Bind ViewModel.AddToCartCommand}"
+                            Background="#FF4444"
+                            Foreground="White"
+                            CornerRadius="8"
+                            Height="56"
+                            FontSize="16"
+                            HorizontalAlignment="Stretch"/>
+
+                    <Button x:Name="BuyNowBtn"
+                            Grid.Column="1"
+                            Content="Mua ngay"
+                            Click="BuyNowButton_Click"
+                            Background="#008F5A"
+                            Foreground="White"
+                            CornerRadius="8"
+                            Height="56"
+                            FontSize="16"
+                            FontWeight="Bold"
+                            HorizontalAlignment="Stretch"/>
+                </Grid>
+>>>>>>> Stashed changes
             </StackPanel>
         </ScrollViewer>
     </Grid>

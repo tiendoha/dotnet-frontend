@@ -138,20 +138,33 @@
                             <StackPanel Orientation="Horizontal"
                                         Spacing="8"
                                         HorizontalAlignment="Center">
-                                <Button Content="Thêm vào giỏ"
-                                        Background="#F4A79F"
+
+                                <Button Background="#FF4444"
                                         Foreground="White"
                                         CornerRadius="4"
                                         FontSize="12"
+<<<<<<< Updated upstream
                                         Padding="6,4"/>
                                 <Button Content="Xem chi tiết"
                                         Background="#8BC34A"
+=======
+                                        Padding="6,4"
+                                        Click="AddToCart_Click">
+                                    <FontIcon Glyph="&#xE7BF;" FontSize="20" Foreground="White"/>
+                                </Button>
+
+                                <Button Background="#008F5A"
+>>>>>>> Stashed changes
                                         Foreground="White"
                                         CornerRadius="4"
                                         FontSize="12"
                                         Padding="6,4"
-                                        Click="ViewDetails_Click"/>
+                                        Click="ViewDetails_Click">
+                                        <FontIcon Glyph="&#xE712;" FontSize="20" Foreground="White"/>
+                                </Button>
+
                             </StackPanel>
+
                         </StackPanel>
                     </Border>
                 </DataTemplate>

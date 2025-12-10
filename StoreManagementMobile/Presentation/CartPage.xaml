@@ -27,6 +27,7 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
 
+<<<<<<< Updated upstream
                             <Border Background="White" Padding="12" CornerRadius="10" Margin="0,0,0,10">
                                 <Grid ColumnSpacing="12">
                                     <Grid.ColumnDefinitions>
@@ -34,6 +35,15 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
+=======
+                            <Border Background="White" Padding="12" CornerRadius="12" Margin="0,0,0,10"
+                                    BorderBrush="#E0E0E0" BorderThickness="1">
+                                <Grid RowSpacing="8">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+>>>>>>> Stashed changes
 
                                     <!-- IMAGE -->
                                     <Border Width="80" Height="80" CornerRadius="6" Background="#EEE">
@@ -46,12 +56,50 @@
                                         <TextBlock Text="{Binding PriceText}" Foreground="Gray" FontSize="14"/>
                                     </StackPanel>
 
+<<<<<<< Updated upstream
                                     <!-- QUANTITY + DELETE -->
                                     <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="6">
 
                                         <!-- QUANTITY BUTTONS -->
                                         <StackPanel Orientation="Horizontal" Spacing="10">
 
+=======
+                                        <!-- NAME + PRICE -->
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                                            <TextBlock Text="{Binding ProductName}"
+                                                       FontSize="16"
+                                                       FontWeight="SemiBold"
+                                                       TextWrapping="Wrap"
+                                                       MaxLines="2"/>
+                                            <TextBlock Text="{Binding PriceText}"
+                                                       Foreground="#FF4444"
+                                                       FontSize="15"
+                                                       FontWeight="Bold"/>
+                                        </StackPanel>
+
+                                        <!-- DELETE BUTTON (Icon) -->
+                                        <Button Grid.Column="2"
+                                                Width="40" Height="40"
+                                                Background="#FF4444"
+                                                CornerRadius="20"
+                                                Padding="0"
+                                                Command="{Binding DataContext.RemoveItemCommand, ElementName=RootPage}"
+                                                CommandParameter="{Binding}">
+                                            <FontIcon Glyph="&#xE74D;"
+                                                     FontSize="18"
+                                                     Foreground="White"/>
+                                        </Button>
+                                    </Grid>
+
+                                    <!-- ROW 2: QUANTITY CONTROLS -->
+                                    <Grid Grid.Row="1" HorizontalAlignment="Right">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock Text="Số lượng:"
+                                                       VerticalAlignment="Center"
+                                                       FontSize="14"
+                                                       Foreground="Gray"/>
+
+>>>>>>> Stashed changes
                                             <!-- MINUS -->
                                             <Button Width="36" Height="36"
                                                     Background="#008F5A"
@@ -61,6 +109,7 @@
                                                     FontSize="20" FontWeight="Bold"
                                                     Foreground="Black"
                                                     Command="{Binding DataContext.DecreaseQuantityCommand, ElementName=RootPage}"
+<<<<<<< Updated upstream
                                                     CommandParameter="{Binding}" />
 
                                             <TextBox Text="{Binding Quantity, Mode=TwoWay}"
@@ -70,6 +119,14 @@
                                                      FontSize="20"
                                                      InputScope="Number"
                                                      LostFocus="QuantityTextBox_LostFocus" />
+=======
+                                                    CommandParameter="{Binding}">
+                                                <TextBlock Text="−"
+                                                          FontSize="18"
+                                                          FontWeight="Bold"
+                                                          Foreground="#333"/>
+                                            </Button>
+>>>>>>> Stashed changes
 
 
                                             <!-- PLUS -->
@@ -81,8 +138,17 @@
                                                     FontSize="20" FontWeight="Bold"
                                                     Foreground="Black"
                                                     Command="{Binding DataContext.IncreaseQuantityCommand, ElementName=RootPage}"
+<<<<<<< Updated upstream
                                                     CommandParameter="{Binding}" />
 
+=======
+                                                    CommandParameter="{Binding}">
+                                                <TextBlock Text="+"
+                                                          FontSize="18"
+                                                          FontWeight="Bold"
+                                                          Foreground="White"/>
+                                            </Button>
+>>>>>>> Stashed changes
                                         </StackPanel>
 
                                         <!-- DELETE -->
@@ -113,6 +179,7 @@
 
             <TextBlock Text="Mã khuyến mãi:" FontWeight="SemiBold"/>
 
+<<<<<<< Updated upstream
             <ComboBox ItemsSource="{Binding PromoList}"
                       SelectedItem="{Binding SelectedPromo, Mode=TwoWay}"
                       MaxDropDownHeight="250">
@@ -123,6 +190,19 @@
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
+=======
+                <ComboBox ItemsSource="{Binding PromoList}"
+                          SelectedItem="{Binding SelectedPromo, Mode=TwoWay}"
+                          MaxDropDownHeight="200"
+                          HorizontalAlignment="Stretch">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding DisplayText}"
+                                       Foreground="{Binding IsEnabled, Converter={StaticResource BoolToColorConverter}}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+>>>>>>> Stashed changes
 
 
             <!-- APPLY BUTTON -->
@@ -147,10 +227,76 @@
                         Background="#008F5A"
                         Foreground="White"
                         CornerRadius="6"
+<<<<<<< Updated upstream
                         Command="{Binding ContinuePaymentCommand}" />
+=======
+                        Height="40"
+                        HorizontalAlignment="Right"
+                        Command="{Binding ApplyPromoCommand}" />
+
+
+                <!-- SUMMARY -->
+                <Border Background="#F5F5F5"
+                        CornerRadius="8"
+                        Padding="12"
+                        Margin="0,5,0,0">
+                    <StackPanel Spacing="6">
+                        <Grid>
+                            <TextBlock Text="Tạm tính:" FontSize="14"/>
+                            <TextBlock Text="{Binding SubtotalText}"
+                                       FontSize="16"
+                                       FontWeight="SemiBold"
+                                       HorizontalAlignment="Right"
+                                       Foreground="#FF4444"/>
+                        </Grid>
+
+                        <Grid>
+                            <TextBlock Text="Giảm giá:" FontSize="14"/>
+                            <TextBlock Text="{Binding DiscountText}"
+                                       FontSize="16"
+                                       FontWeight="SemiBold"
+                                       HorizontalAlignment="Right"
+                                       Foreground="#FF4444"/>
+                        </Grid>
+
+                        <Rectangle Fill="#CCCCCC" Height="1" Margin="0,4"/>
+
+                        <Grid>
+                            <TextBlock Text="Tổng cộng:"
+                                       FontSize="16"
+                                       FontWeight="Bold"/>
+                            <TextBlock Text="{Binding TotalText}"
+                                       FontSize="20"
+                                       FontWeight="Bold"
+                                       HorizontalAlignment="Right"
+                                       Foreground="#FF4444"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+>>>>>>> Stashed changes
             </StackPanel>
 
+<<<<<<< Updated upstream
         </StackPanel>
+=======
+        <!-- ====================== -->
+        <!--  NÚT THANH TOÁN LUÔN CỐ ĐỊNH Ở DƯỚI CÙNG -->
+        <!-- ====================== -->
+        <Button Grid.Row="3"
+                Content="Tiếp tục thanh toán"
+                Background="#008F5A"
+                Foreground="White"
+                CornerRadius="8"
+                Height="52"
+                FontSize="18"
+                FontWeight="Bold"
+                Margin="0,5,0,10"
+                HorizontalAlignment="Stretch"
+                Width="Auto"
+                Command="{Binding ContinuePaymentCommand}"/>
+
+>>>>>>> Stashed changes
 
     </Grid>
 </Page>
