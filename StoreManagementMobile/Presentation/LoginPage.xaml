@@ -5,11 +5,25 @@
     xmlns:vm="using:StoreManagementMobile.ViewModels"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Width="320">
-        <StackPanel Spacing="16">
-            <TextBlock Text="ĐĂNG NHẬP"
+    <Grid>
+        <!-- Nút Back -->
+        <Button x:Name="btnBack"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Margin="16"
+                Width="40"
+                Height="40"
+                CornerRadius="20"
+                Background="#9E9E9E"
+                Click="BackButton_Click">
+            <FontIcon Glyph="&#xE72B;" FontSize="16" Foreground="White"/>
+        </Button>
+
+        <Grid HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Width="320">
+            <StackPanel Spacing="16">
+                <TextBlock Text="ĐĂNG NHẬP"
                     FontSize="28"
                     FontWeight="Bold"
                     HorizontalAlignment="Center"/>
@@ -32,6 +46,7 @@
             <ProgressRing IsActive="{x:Bind ViewModel.IsBusy, Mode=OneWay}"
                     Visibility="{x:Bind ViewModel.IsBusy, Mode=OneWay}"
                     HorizontalAlignment="Center"/>
-        </StackPanel>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Page>

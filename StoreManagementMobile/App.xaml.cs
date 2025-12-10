@@ -72,6 +72,7 @@ public partial class App : Application
 
                         // Services
                         services.AddSingleton<ICartService, CartService>();
+                        services.AddSingleton<IOrderHistoryService, OrderHistoryService>();
                     })
            
             );
@@ -82,10 +83,9 @@ public partial class App : Application
             // ======================================================
             // ⭐⭐ 2. Fake UserId & Token (Test Mode)
             // ======================================================
-            // 👉 LƯU Ý:
-            // Khi login hoạt động, chỉ cần COMMENT 2 dòng này.
-            App.UserId = 1;
-            App.UserToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxIiwidW5pcXVlX25hbWUiOiJhZG1pbiIsInJvbGUiOiJBZG1pbiIsImp0aSI6IjdlODM2YTVkLWRlOWMtNDkwYi05NTM5LTc3OGQ3YjU1M2U3ZiIsImlhdCI6MTc2NDQ5NjI5OSwibmJmIjoxNzY0NDk2Mjk5LCJleHAiOjE3NjQ0OTk4OTksImlzcyI6IlN0b3JlTWFuYWdlbWVudEFQSSIsImF1ZCI6IlN0b3JlTWFuYWdlbWVudENsaWVudCJ9.GymGxAO7jPjuOSNrIjq8k6rQ8mttIRHOZ4_tXsD8T5c";
+            // 👉 Đã comment - app mới vào chưa login
+            // App.UserId = 1;
+            // App.UserToken = "...";
             // ======================================================
 
      
@@ -98,22 +98,18 @@ public partial class App : Application
                 var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
                 Debug.WriteLine("📦 EnsureCreated() database...");
+                
+                // 👉 ĐÃ COMMENT để KHÔNG xóa database mỗi lần mở app
+                // try
+                // {
+                //     db.Database.EnsureDeleted();
+                //     Debug.WriteLine("🗑️ Đã xóa database cũ");
+                // }
+                // catch { }
+                
                 db.Database.EnsureCreated();
-
-                // ⭐ SEED TEST CART
-                if (!db.CartItems.Any(c => c.UserId == App.UserId))
-                {
-                    db.CartItems.Add(new CartItem
-                    {
-                        UserId = App.UserId,
-                        ProductId = 19,
-                        ProductName = "Bếp gas mini",
-                        Price = 416845.00M,
-                        Quantity = 2,
-                        ImagePath = "/images/products/product_19.png"
-                    });
-                    db.SaveChanges();
-                }
+                Debug.WriteLine("✅ Database đã được tạo với bảng OrderHistories");
+                
             }
 
             // ============================
@@ -131,10 +127,10 @@ public partial class App : Application
                 window.Content = rootFrame;
             }
 
-        // 4. Điều hướng vào trang Login
+        // 4. Điều hướng vào trang ProductListPage
         if (rootFrame.Content == null)
         {
-            rootFrame.Navigate(typeof(CartPage));
+            rootFrame.Navigate(typeof(ProductListPage));
         }
 
             // ============================

@@ -5,48 +5,48 @@
     Background="#F5F5F5">
 
     <Grid>
-        <StackPanel
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
+        <StackPanel 
+            HorizontalAlignment="Center" 
+            VerticalAlignment="Center" 
             MaxWidth="400"
             Spacing="24"
             Padding="30">
-
+            
             <!-- Icon dấu tích xanh -->
-            <Border
-                Width="120"
-                Height="120"
-                Background="#008F5A"
+            <Border 
+                Width="120" 
+                Height="120" 
+                Background="#4CAF50"
                 CornerRadius="60">
-                <FontIcon
-                    Glyph="&#xE73E;"
-                    FontSize="60"
+                <FontIcon 
+                    Glyph="&#xE73E;" 
+                    FontSize="60" 
                     Foreground="White"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"/>
             </Border>
-
+            
             <!-- Title -->
-            <TextBlock
+            <TextBlock 
                 Text="Đặt hàng thành công!"
                 FontSize="28"
                 FontWeight="Bold"
                 HorizontalAlignment="Center"
-                Foreground="#008F5A"
+                Foreground="#4CAF50"
                 Margin="0,20,0,0"/>
-
+            
             <!-- Message -->
-            <TextBlock
+            <TextBlock 
                 Text="Cảm ơn bạn đã mua hàng!"
                 FontSize="16"
                 HorizontalAlignment="Center"
                 Foreground="#666"
                 TextWrapping="Wrap"/>
-
+            
             <!-- Thông tin đơn hàng -->
-            <Border
-                Background="White"
-                CornerRadius="12"
+            <Border 
+                Background="White" 
+                CornerRadius="12" 
                 Padding="20"
                 BorderBrush="#E0E0E0"
                 BorderThickness="1"
@@ -60,10 +60,10 @@
                         <FontIcon Grid.Column="0" Glyph="&#xE8EC;" FontSize="16" Foreground="#4CAF50" Margin="0,0,8,0" VerticalAlignment="Center"/>
                         <TextBlock Grid.Column="1" VerticalAlignment="Center">
                             <Run Text="Tổng tiền: " FontWeight="SemiBold"/>
-                            <Run x:Name="TotalText" FontWeight="Bold" FontSize="18" Foreground="#FF4444"/>
+                            <Run x:Name="TotalText" FontWeight="Bold" FontSize="18" Foreground="#4CAF50"/>
                         </TextBlock>
                     </Grid>
-
+                    
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
@@ -75,7 +75,7 @@
                             <Run x:Name="CustomerNameText"/>
                         </TextBlock>
                     </Grid>
-
+                    
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
@@ -89,13 +89,13 @@
                     </Grid>
                 </StackPanel>
             </Border>
-
+            
             <!-- Nút quay về trang chủ -->
-            <Button
+            <Button 
                 HorizontalAlignment="Stretch"
                 Height="50"
                 CornerRadius="8"
-                Background="#FF9800"
+                Background="#4CAF50"
                 Foreground="White"
                 FontSize="16"
                 FontWeight="SemiBold"
@@ -107,7 +107,7 @@
                     <TextBlock Text="Quay về trang chủ" VerticalAlignment="Center"/>
                 </StackPanel>
             </Button>
-
+            
         </StackPanel>
     </Grid>
 </Page>

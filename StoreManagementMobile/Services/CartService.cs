@@ -15,21 +15,21 @@ public class CartService : ICartService
 
     public async Task<List<CartItem>> GetItemsAsync()
     {
-        return await _db.CartItems
-            .Where(x => x.UserId == App.UserId)
-            .ToListAsync();
+        // Giỏ hàng chung cho tất cả user - không lọc theo UserId
+        return await _db.CartItems.ToListAsync();
     }
 
     public async Task AddItemAsync(Product product, int quantity)
     {
+        // Tìm sản phẩm theo ProductId - không cần UserId
         var existing = await _db.CartItems
-            .FirstOrDefaultAsync(x => x.ProductId == product.ProductId && x.UserId == App.UserId);
+            .FirstOrDefaultAsync(x => x.ProductId == product.ProductId);
 
         if (existing == null)
         {
             await _db.CartItems.AddAsync(new CartItem
             {
-                UserId = App.UserId,
+                UserId = 0, // Giỏ hàng chung - không phân biệt user
                 ProductId = product.ProductId,
                 ProductName = product.ProductName,
                 ImagePath = product.ImagePath,
@@ -47,8 +47,9 @@ public class CartService : ICartService
 
     public async Task UpdateQuantityAsync(int productId, int newQuantity)
     {
+        // Tìm theo ProductId - không cần UserId
         var item = await _db.CartItems
-            .FirstOrDefaultAsync(x => x.ProductId == productId && x.UserId == App.UserId);
+            .FirstOrDefaultAsync(x => x.ProductId == productId);
     
         if (item == null) return;
     
@@ -59,8 +60,9 @@ public class CartService : ICartService
 
     public async Task RemoveItemAsync(int productId)
     {
+        // Tìm theo ProductId - không cần UserId
         var item = await _db.CartItems
-            .FirstOrDefaultAsync(x => x.ProductId == productId && x.UserId == App.UserId);
+            .FirstOrDefaultAsync(x => x.ProductId == productId);
     
         if (item == null) return;
     
@@ -71,7 +73,8 @@ public class CartService : ICartService
 
     public async Task ClearAsync()
     {
-        var items = _db.CartItems.Where(x => x.UserId == App.UserId);
+        // Xóa toàn bộ giỏ hàng - không phân biệt user
+        var items = _db.CartItems;
         _db.CartItems.RemoveRange(items);
         await _db.SaveChangesAsync();
     }

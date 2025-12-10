@@ -7,6 +7,7 @@ namespace StoreManagementMobile.Services.LocalDb;
 public class AppDbContext : DbContext
 {
     public DbSet<CartItem> CartItems => Set<CartItem>();
+    public DbSet<OrderHistory> OrderHistories => Set<OrderHistory>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -24,7 +25,7 @@ public class AppDbContext : DbContext
             Directory.CreateDirectory(folder!);
     }
 
-    // 🔥 Lấy đúng đường dẫn SQLite cho từng platform
+    // 🔥 Lấy đúng đường dẫn SQLite cho từng platformmm
     private string GetDatabasePath()
     {
         var fileName = "store_local.db3";

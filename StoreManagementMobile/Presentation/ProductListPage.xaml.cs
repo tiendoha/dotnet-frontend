@@ -3,23 +3,29 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
 using StoreManagementMobile.Presentation;
-using StoreManagementMobile.Models; // Giả định ProductResponse nằm trong Models
-using System.Threading.Tasks; // Cần thiết cho Task.Run và async/await
-using System.Diagnostics; // Cần thiết cho Debug.WriteLine
+using StoreManagementMobile.Models;
+using StoreManagementMobile.Services;
+using System.Threading.Tasks;
+using System.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace StoreManagementMobile.Presentation
 {
     public sealed partial class ProductListPage : Page
     {
-        // Giả định ProductListViewModel đã được định nghĩa và có các phương thức LoadProductsAsync, 
-        // LoadCategoriesAsync, RefreshProducts, LoadMoreProductsAsync, ApplySortingAsync, ImmediateSearchAsync
         public ProductListViewModel ViewModel { get; set; } = new ProductListViewModel();
+        private readonly ICartService _cartService;
 
         public ProductListPage()
         {
             this.InitializeComponent();
             this.DataContext = ViewModel;
 
+            // Lấy CartService từ DI
+            var app = (App)Application.Current;
+            _cartService = app.Host.Services.GetRequiredService<ICartService>();
+
+            this.NavigationCacheMode = NavigationCacheMode.Enabled;
             // Thiết lập chế độ sắp xếp mặc định nếu SortOptions đã được đặt tên trong XAML 
             // và chứa các RadioButton (Giữ lại logic ban đầu của người dùng)
             // Tuy nhiên, việc này nên được đảm bảo trong XAML (SelectedItem) hoặc ViewModel.
@@ -34,12 +40,36 @@ namespace StoreManagementMobile.Presentation
         {
             base.OnNavigatedTo(e);
             
+            // Cập nhật icon Auth dựa vào trạng thái login
+            UpdateAuthButton();
+            
             // Đảm bảo tất cả các thao tác load dữ liệu ban đầu được chạy
             await ViewModel.LoadProductsAsync();
             await ViewModel.LoadCategoriesAsync();
             // Việc RefreshProducts có thể không cần thiết nếu LoadProductsAsync đã tải lần đầu
             // Nhưng giữ lại theo yêu cầu của code gốc
             await ViewModel.RefreshProducts(); 
+        }
+
+        private void UpdateAuthButton()
+        {
+            // Kiểm tra đã login chưa
+            bool isLoggedIn = !string.IsNullOrEmpty(App.UserToken);
+            
+            if (isLoggedIn)
+            {
+                // Đã login - đổi thành nút Logout
+                iconAuth.Glyph = "\uE7E8"; // Logout icon
+                btnAuth.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.OrangeRed);
+                Microsoft.UI.Xaml.Controls.ToolTipService.SetToolTip(btnAuth, "Đăng xuất");
+            }
+            else
+            {
+                // Chưa login - giữ nút Login
+                iconAuth.Glyph = "\uE77B"; // User icon
+                btnAuth.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.DodgerBlue);
+                Microsoft.UI.Xaml.Controls.ToolTipService.SetToolTip(btnAuth, "Đăng nhập");
+            }
         }
 
         // -------------------------------
@@ -157,5 +187,90 @@ private void ScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEven
     }
 }
 
+private void CartButton_Click(object sender, RoutedEventArgs e)
+{
+    // Điều hướng sang trang giỏ hàng
+    this.Frame.Navigate(typeof(CartPage));
+}
+
+private async void AddToCart_Click(object sender, RoutedEventArgs e)
+{
+    if (sender is Button button && button.DataContext is ProductResponse product)
+    {
+        try
+        {
+            // Tạo Product từ ProductResponse
+            var productToAdd = new Product
+            {
+                ProductId = product.ProductId,
+                ProductName = product.ProductName ?? "",
+                ImagePath = product.ImageUrl ?? "",
+                Price = product.Price
+            };
+
+            // Thêm vào giỏ hàng (SQLite)
+            await _cartService.AddItemAsync(productToAdd, 1);
+
+            // Hiển thị thông báo
+            var dialog = new ContentDialog
+            {
+                Title = "Thành công",
+                Content = $"Đã thêm '{product.ProductName}' vào giỏ hàng",
+                CloseButtonText = "OK",
+                XamlRoot = this.XamlRoot
+            };
+            await dialog.ShowAsync();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"💥 Lỗi khi thêm vào giỏ: {ex}");
+        }
+    }
+}
+
+    // ----------------------------------------------------
+    // XỬ LÝ NÚT LỊCH SỬ ĐƠN HÀNG
+    // ----------------------------------------------------
+    private void HistoryButton_Click(object sender, RoutedEventArgs e)
+    {
+        // Điều hướng sang trang OrderHistoryPage
+        this.Frame.Navigate(typeof(OrderHistoryPage));
+    }
+
+    // ----------------------------------------------------
+    // XỬ LÝ NÚT AUTH (LOGIN/LOGOUT)
+    // ----------------------------------------------------
+    private void AuthButton_Click(object sender, RoutedEventArgs e)
+    {
+        bool isLoggedIn = !string.IsNullOrEmpty(App.UserToken);
+        
+        if (isLoggedIn)
+        {
+            // Đã login - thực hiện logout
+            App.UserToken = "";
+            App.UserId = 0;
+            UpdateAuthButton();
+            
+            // Hiển thị thông báo
+            var _ = ShowLogoutMessage();
+        }
+        else
+        {
+            // Chưa login - điều hướng sang LoginPage
+            this.Frame.Navigate(typeof(LoginPage));
+        }
+    }
+
+    private async Task ShowLogoutMessage()
+    {
+        var dialog = new ContentDialog
+        {
+            Title = "Đăng xuất",
+            Content = "Đã đăng xuất thành công!",
+            CloseButtonText = "OK",
+            XamlRoot = this.XamlRoot
+        };
+        await dialog.ShowAsync();
+    }
     }
 }

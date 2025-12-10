@@ -76,11 +76,12 @@
                                         </StackPanel>
 
                                         <Border Grid.Column="1"
+                                                Background="#4CAF50"
                                                 CornerRadius="12"
                                                 Padding="8,4">
                                             <TextBlock Text="{Binding Status}"
                                                        FontSize="12"
-                                                       Foreground="#008F5A"
+                                                       Foreground="White"
                                                        FontWeight="SemiBold"/>
                                         </Border>
                                     </Grid>
@@ -132,7 +133,7 @@
                                                    Text="{Binding TotalText}"
                                                    FontSize="18"
                                                    FontWeight="Bold"
-                                                   Foreground="#FF4444"/>
+                                                   Foreground="#F22613"/>
                                     </Grid>
 
                                     <!-- View Details Button -->
@@ -140,7 +141,7 @@
                                             Click="ViewDetails_Click"
                                             Tag="{Binding OrderId}"
                                             HorizontalAlignment="Stretch"
-                                            Background="#008F5A"
+                                            Background="#2196F3"
                                             Foreground="White"
                                             CornerRadius="8"
                                             Height="36"
