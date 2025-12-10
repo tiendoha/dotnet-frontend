@@ -32,10 +32,13 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- SEARCH + FILTER -->
-        <Grid Grid.Row="0" ColumnSpacing="12" Margin="0,0,0,16">
+        <!-- SEARCH + FILTER + HISTORY + CART + LOGIN -->
+        <Grid Grid.Row="0" ColumnSpacing="8" Margin="0,0,0,16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
@@ -53,7 +56,7 @@
             <Button x:Name="btnFilter"
                     Grid.Column="1"
                     Height="40"
-                    Width="40"
+                    Width="44"
                     CornerRadius="8"
                     Padding="0"
                     Background="#8BC34A">
@@ -85,6 +88,46 @@
                         </StackPanel>
                     </Flyout>
                 </Button.Flyout>
+            </Button>
+
+            <!-- HISTORY BUTTON -->
+            <Button x:Name="btnHistory"
+                    Grid.Column="2"
+                    Height="40"
+                    Width="44"
+                    CornerRadius="8"
+                    Padding="0"
+                    Background="#FF9800"
+                    Click="HistoryButton_Click"
+                    ToolTipService.ToolTip="Lịch sử đơn hàng">
+                <FontIcon Glyph="&#xE81C;" FontSize="20" Foreground="White"/>
+            </Button>
+
+            <!-- LOGIN/LOGOUT BUTTON -->
+            <Button x:Name="btnAuth"
+                    Grid.Column="3"
+                    Height="40"
+                    Width="44"
+                    CornerRadius="8"
+                    Padding="0"
+                    Background="#2196F3"
+                    Click="AuthButton_Click"
+                    ToolTipService.ToolTip="Đăng nhập/Đăng xuất">
+                <FontIcon x:Name="iconAuth" Glyph="&#xE77B;" FontSize="20" Foreground="White"/>
+            </Button>
+
+            <!-- CART BUTTON -->
+            <Button x:Name="btnCart"
+                    Grid.Column="4"
+                    Height="40"
+                    Width="44"
+                    CornerRadius="8"
+                    Padding="0"
+                    Background="#FF4444"
+                    Click="CartButton_Click">
+                <FontIcon Glyph="&#xE7BF;"
+                         FontSize="20"
+                         Foreground="White"/>
             </Button>
         </Grid>
 
@@ -143,18 +186,12 @@
                                         Foreground="White"
                                         CornerRadius="4"
                                         FontSize="12"
-<<<<<<< Updated upstream
-                                        Padding="6,4"/>
-                                <Button Content="Xem chi tiết"
-                                        Background="#8BC34A"
-=======
                                         Padding="6,4"
                                         Click="AddToCart_Click">
                                     <FontIcon Glyph="&#xE7BF;" FontSize="20" Foreground="White"/>
                                 </Button>
 
                                 <Button Background="#008F5A"
->>>>>>> Stashed changes
                                         Foreground="White"
                                         CornerRadius="4"
                                         FontSize="12"
