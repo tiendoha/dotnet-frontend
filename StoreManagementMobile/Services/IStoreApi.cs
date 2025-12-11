@@ -22,4 +22,7 @@ public interface IStoreApi
     [Get("/api/Customer/{id}")]
     Task<BackendResponse<Customer>> GetCustomerById(int id);
     
+    [Get("/api/Customer/by-user/{userId}")]
+    Task<BackendResponse<Customer>> GetCustomerByUserId(int userId);
+     
 }

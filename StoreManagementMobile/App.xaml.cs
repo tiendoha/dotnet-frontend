@@ -21,7 +21,7 @@ public partial class App : Application
     public static string UserToken { get; set; } = string.Empty;
 
     // ⭐ Cart theo user local
-    public static int UserId { get; set; } = 1;
+    public static int UserId { get; set; } = 0;
 
     private Window? _mainWindow;
     public App()
@@ -130,6 +130,7 @@ public partial class App : Application
         // 4. Điều hướng vào trang ProductListPage
         if (rootFrame.Content == null)
         {
+            Debug.WriteLine("👉 Điều hướng vào ProductListPage với userId :" + App.UserId + " - và token là :" + App.UserToken);
             rootFrame.Navigate(typeof(ProductListPage));
         }
 

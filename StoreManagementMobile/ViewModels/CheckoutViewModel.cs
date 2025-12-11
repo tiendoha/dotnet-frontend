@@ -103,7 +103,7 @@ public partial class CheckoutViewModel : ObservableObject
                 return;
             }
     
-            var response = await _api.GetCustomerById(userId);
+            var response = await _api.GetCustomerByUserId(userId);
     
             if (response == null || !response.Success || response.Data == null)
             {

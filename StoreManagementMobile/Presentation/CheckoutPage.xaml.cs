@@ -27,7 +27,7 @@ public sealed partial class CheckoutPage : Page
             
             // 👉 Đã bỏ auto-load thông tin khách hàng
             // User sẽ tự nhập hoặc có thể thêm nút "Tải thông tin" nếu cần
-            // _ = ViewModel.LoadInfoCustomer();
+             _ = ViewModel.LoadInfoCustomer();
         }
     }
     
